@@ -1,0 +1,101 @@
+plan_id,coverage_type,covered_services,copay,notes
+PPO001,PPO,"dental, emergency, primary care","$40 ER, $15 primary care",No referral needed for specialists
+HMO002,HMO,"primary care, mental health","$10 primary care, $25 mental health",Requires PCP selection
+EPO003,EPO,"vision, emergency, specialist","$60 ER, $35 specialist",Out-of-network not covered
+PPO004,PPO,"dental, vision, specialist","$20 dental, $30 specialist",Annual vision exam included
+HMO005,HMO,"emergency, primary care, mental health","$75 ER, $10 primary care",Mental health requires prior auth
+EPO006,EPO,"specialist, primary care","$25 specialist, $10 primary care",Limited to in-network providers only
+PPO007,PPO,"dental, emergency, mental health","$50 ER, $20 mental health",No prior auth for dental
+HMO008,HMO,"primary care, vision","$5 primary care, $15 vision",Vision covered once per year
+EPO009,EPO,"emergency, specialist","$70 ER, $40 specialist",Emergency services covered nationwide
+PPO010,PPO,"vision, primary care, specialist","$10 primary care, $25 specialist",No referral required for vision
+PPO011,PPO,"dental, vision, emergency","$45 ER, $20 dental",Includes orthodontics for children
+HMO012,HMO,"primary care, specialist","$10 primary care, $30 specialist",PCP referral required
+EPO013,EPO,"mental health, vision","$20 mental health, $15 vision",Telehealth available for mental health
+PPO014,PPO,"emergency, primary care","$50 ER, $10 primary care",Urgent care covered with $25 copay
+HMO015,HMO,"primary care, dental","$5 primary care, $20 dental",Dental includes cleanings twice a year
+EPO016,EPO,"vision, specialist","$25 vision, $35 specialist",No coverage for out-of-network vision
+PPO017,PPO,"dental, emergency, specialist","$60 ER, $40 specialist",No prior auth for dental
+HMO018,HMO,"primary care, mental health","$10 primary care, $30 mental health",Mental health includes therapy sessions
+EPO019,EPO,"specialist, emergency","$70 ER, $45 specialist",Emergency covered nationwide
+PPO020,PPO,"vision, dental, primary care","$15 primary care, $25 dental",Vision exam once per year
+PPO021,PPO,"emergency, mental health","$55 ER, $20 mental health",No referral needed for mental health
+HMO022,HMO,"primary care, emergency","$10 primary care, $75 ER",ER visits require notification
+EPO023,EPO,"vision, mental health","$20 vision, $30 mental health",Limited to in-network therapists
+PPO024,PPO,"dental, specialist","$25 dental, $35 specialist",Orthodontics not included
+HMO025,HMO,"primary care, vision","$5 primary care, $20 vision",Vision includes glasses every 2 years
+EPO026,EPO,"specialist, emergency","$65 ER, $40 specialist",No coverage outside network
+PPO027,PPO,"vision, emergency","$50 ER, $15 vision",Vision covered once per year
+HMO028,HMO,"primary care, mental health","$10 primary care, $25 mental health",Therapy sessions require referral
+EPO029,EPO,"vision, specialist","$30 vision, $35 specialist",No out-of-network coverage
+PPO030,PPO,"dental, emergency, primary care","$45 ER, $10 primary care",Dental includes cleanings
+HMO031,HMO,"primary care, emergency","$5 primary care, $70 ER",ER visits require PCP notification
+EPO032,EPO,"mental health, specialist","$25 mental health, $40 specialist",Telehealth available
+PPO033,PPO,"vision, dental","$20 vision, $30 dental",Includes pediatric dental
+HMO034,HMO,"primary care, specialist","$10 primary care, $35 specialist",Referral required for specialist
+EPO035,EPO,"vision, emergency","$60 ER, $25 vision",Emergency covered nationwide
+PPO036,PPO,"dental, mental health","$30 dental, $20 mental health",No prior auth for dental
+HMO037,HMO,"primary care, vision","$5 primary care, $15 vision",Vision includes annual exam
+EPO038,EPO,"specialist, mental health","$35 specialist, $25 mental health",In-network only
+PPO039,PPO,"emergency, primary care","$50 ER, $10 primary care",Urgent care covered
+HMO040,HMO,"primary care, dental","$10 primary care, $20 dental",Dental includes x-rays
+EPO041,EPO,"vision, specialist","$25 vision, $30 specialist",No out-of-network coverage
+PPO042,PPO,"dental, emergency","$40 ER, $25 dental",Includes pediatric dental
+HMO043,HMO,"primary care, mental health","$5 primary care, $30 mental health",Therapy sessions covered
+EPO044,EPO,"specialist, emergency","$70 ER, $35 specialist",Emergency services nationwide
+PPO045,PPO,"vision, primary care","$10 primary care, $20 vision",Vision includes contact lens fitting
+HMO046,HMO,"primary care, vision","$5 primary care, $15 vision",Vision covered once per year
+EPO047,EPO,"mental health, specialist","$30 mental health, $40 specialist",Telehealth available
+PPO048,PPO,"dental, emergency, specialist","$60 ER, $35 specialist",No prior auth for dental
+HMO049,HMO,"primary care, emergency","$10 primary care, $75 ER",ER visits require PCP notification
+EPO050,EPO,"vision, mental health","$20 vision, $25 mental health",Limited to in-network providers
+PPO051,PPO,"dental, vision","$25 dental, $20 vision",Includes orthodontics
+HMO052,HMO,"primary care, mental health","$10 primary care, $30 mental health",Referral required
+EPO053,EPO,"specialist, emergency","$65 ER, $40 specialist",Emergency covered nationwide
+PPO054,PPO,"vision, primary care","$15 primary care, $25 vision",Vision includes annual exam
+HMO055,HMO,"primary care, dental","$5 primary care, $20 dental",Dental includes cleanings
+EPO056,EPO,"mental health, specialist","$30 mental health, $35 specialist",Telehealth available
+PPO057,PPO,"dental, emergency","$50 ER, $30 dental",No prior auth for dental
+HMO058,HMO,"primary care, vision","$10 primary care, $15 vision",Vision includes glasses
+EPO059,EPO,"vision, emergency","$60 ER, $25 vision",Emergency services nationwide
+PPO060,PPO,"dental, primary care","$20 dental, $10 primary care",Includes pediatric dental
+HMO061,HMO,"primary care, mental health","$5 primary care, $25 mental health",Therapy sessions covered
+EPO062,EPO,"specialist, mental health","$35 specialist, $30 mental health",In-network only
+PPO063,PPO,"vision, emergency","$50 ER, $20 vision",Vision covered once per year
+HMO064,HMO,"primary care, dental","$10 primary care, $25 dental",Dental includes x-rays
+EPO065,EPO,"vision, specialist","$25 vision, $35 specialist",No out-of-network coverage
+PPO066,PPO,"dental, emergency","$45 ER, $30 dental",Includes orthodontics
+HMO067,HMO,"primary care, mental health","$10 primary care, $30 mental health",Referral required
+EPO068,EPO,"specialist, emergency","$70 ER, $40 specialist",Emergency services nationwide
+PPO069,PPO,"vision, primary care","$10 primary care, $20 vision",Vision includes contact lens fitting
+HMO070,HMO,"primary care, vision","$5 primary care, $15 vision",Vision covered once per year
+EPO071,EPO,"mental health, specialist","$30 mental health, $40 specialist",Telehealth available
+PPO072,PPO,"dental, emergency, specialist","$60 ER, $35 specialist",No prior auth for dental
+HMO073,HMO,"primary care, emergency","$10 primary care, $75 ER",ER visits require PCP notification
+EPO074,EPO,"vision, mental health","$20 vision, $25 mental health",Limited to in-network providers
+PPO075,PPO,"dental, vision","$25 dental, $20 vision",Includes orthodontics
+HMO076,HMO,"primary care, mental health","$10 primary care, $30 mental health",Referral required
+EPO077,EPO,"specialist, emergency","$65 ER, $40 specialist",Emergency covered nationwide
+PPO078,PPO,"vision, primary care","$15 primary care, $25 vision",Vision includes annual exam
+HMO079,HMO,"primary care, mental health","$10 primary care, $25 mental health",Mental health includes therapy sessions
+EPO080,EPO,"vision, specialist","$30 vision, $35 specialist",Out-of-network not covered
+PPO081,PPO,"dental, emergency, primary care","$45 ER, $15 primary care",No referral needed for specialists
+HMO082,HMO,"primary care, vision","$5 primary care, $20 vision",Vision covered once per year
+EPO083,EPO,"specialist, mental health","$25 specialist, $30 mental health",Limited to in-network providers only
+PPO084,PPO,"vision, emergency","$50 ER, $20 vision",Vision includes contact lens fitting
+HMO085,HMO,"primary care, dental","$10 primary care, $25 dental",Dental includes cleanings twice a year
+EPO086,EPO,"mental health, emergency","$30 mental health, $60 ER",Emergency services covered nationwide
+PPO087,PPO,"dental, specialist","$25 dental, $35 specialist",Orthodontics not included
+HMO088,HMO,"primary care, mental health","$5 primary care, $30 mental health",Therapy sessions require referral
+EPO089,EPO,"vision, specialist","$25 vision, $40 specialist",No out-of-network coverage
+PPO090,PPO,"emergency, primary care","$50 ER, $10 primary care",Urgent care covered with $25 copay
+HMO091,HMO,"primary care, dental","$10 primary care, $20 dental",Dental includes x-rays and cleanings
+EPO092,EPO,"specialist, mental health","$35 specialist, $25 mental health",Telehealth available
+PPO093,PPO,"vision, dental","$20 vision, $30 dental",Includes pediatric dental
+HMO094,HMO,"primary care, specialist","$10 primary care, $35 specialist",Referral required for specialist
+EPO095,EPO,"vision, emergency","$60 ER, $25 vision",Emergency covered nationwide
+PPO096,PPO,"dental, mental health","$30 dental, $20 mental health",No prior auth for dental
+HMO097,HMO,"primary care, vision","$5 primary care, $15 vision",Vision includes annual exam
+EPO098,EPO,"specialist, mental health","$35 specialist, $25 mental health",In-network only
+PPO099,PPO,"emergency, primary care","$50 ER, $10 primary care",Urgent care covered
+HMO100,HMO,"primary care, dental","$10 primary care, $20 dental",Dental includes cleanings and fluoride treatment

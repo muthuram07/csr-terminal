@@ -1,0 +1,416 @@
+user_code,denial_code,description,suggested_action
+PR,96,Charges not covered when patient is not the subscriber or dependent,Verify member's eligibility or ID with the plan
+CO,45,Charge exceeds fee schedule/maximum allowable amount,Check payer fee schedule or submit an appeal with documentation
+PI,204,Service/equipment/drug not covered under the patient's plan,Confirm benefit exclusions or provide alternate coverage
+OA,18,Duplicate claim/service,Ensure claim has not already been submitted
+CR,22,Care may be covered by another payer per coordination of benefits,Check other insurance coverage and coordinate benefits
+PR,97,Patient not eligible for benefits on date of service,Verify patient eligibility and effective dates
+CO,46,Service not covered under patient's current plan,Review plan benefits and coverage limitations
+PI,205,Prior authorization required but not obtained,Obtain prior authorization before rendering service
+OA,19,Service already adjudicated,Check claim history for previous payments
+CR,23,Patient has other primary insurance,Verify primary insurance and submit to correct payer
+PR,98,Patient coverage terminated before date of service,Verify coverage termination date and patient status
+CO,47,Service exceeds frequency limitations,Review frequency limits and submit documentation if medically necessary
+PI,206,Experimental or investigational service,Provide medical necessity documentation or consider alternative treatment
+OA,20,Claim submitted after timely filing deadline,Submit appeal with documentation of extenuating circumstances
+CR,24,Medicare primary - submit to Medicare first,Submit claim to Medicare before secondary insurance
+PR,99,Patient ID number invalid or inactive,Verify correct patient ID and update system records
+CO,48,Service not medically necessary,Submit medical records and physician documentation
+PI,207,Service performed by non-participating provider,Refer patient to participating provider or obtain authorization
+OA,21,Incomplete claim information,Complete all required fields and resubmit claim
+CR,25,Workers compensation claim,Submit to workers compensation carrier instead
+PR,100,Patient not enrolled in plan,Verify enrollment status and effective dates
+CO,49,Service exceeds benefit maximum,Review annual or lifetime benefit limits
+PI,208,Service requires referral from PCP,Obtain referral from primary care physician
+OA,22,Invalid diagnosis code,Update diagnosis code to current ICD-10 standards
+CR,26,Medicaid primary - submit to Medicaid first,Submit claim to Medicaid before other insurance
+PR,101,Patient coverage suspended,Verify reason for suspension and resolution steps
+CO,50,Service not covered for patient's age group,Review age-specific coverage limitations
+PI,209,Service requires precertification,Obtain precertification before service delivery
+OA,23,Invalid procedure code,Update procedure code to current CPT standards
+CR,27,TRICARE primary - submit to TRICARE first,Submit claim to TRICARE before other insurance
+PR,102,Patient deceased,Verify date of death and coverage termination
+CO,51,Service exceeds daily maximum,Review daily benefit limits and submit documentation
+PI,210,Service performed outside network,Refer to in-network provider or obtain authorization
+OA,24,Missing required attachments,Include all required documentation with claim
+CR,28,VA benefits primary - submit to VA first,Submit claim to Veterans Administration
+PR,103,Patient coverage pending,Wait for coverage activation or verify effective date
+CO,52,Service exceeds visit maximum,Review visit frequency limits per benefit period
+PI,211,Service requires step therapy,Complete required step therapy protocol first
+OA,25,Invalid provider ID,Verify provider enrollment and NPI number
+CR,29,Group health plan primary,Submit to group health plan before other coverage
+PR,104,Patient coverage retroactively terminated,Verify retroactive termination and appeal if necessary
+CO,53,Service exceeds unit maximum,Review unit limits and submit medical necessity
+PI,212,Service requires formulary exception,Submit formulary exception request with documentation
+OA,26,Invalid place of service code,Update place of service code to current standards
+CR,30,COBRA coverage primary,Submit to COBRA administrator first
+PR,105,Patient coverage under appeal,Wait for appeal decision or verify current status
+CO,54,Service exceeds time limit,Review time limitations and submit documentation
+PI,213,Service requires clinical trial participation,Enroll patient in approved clinical trial
+OA,27,Invalid modifier code,Update modifier codes to current standards
+CR,31,Medicare Advantage plan primary,Submit to Medicare Advantage plan first
+PR,106,Patient coverage under review,Wait for review completion or provide additional information
+CO,55,Service exceeds geographic limitation,Review geographic coverage area restrictions
+PI,214,Service requires genetic testing,Complete required genetic testing first
+OA,28,Invalid revenue code,Update revenue codes to current standards
+CR,32,Medicare Supplement plan primary,Submit to Medicare Supplement plan first
+PR,107,Patient coverage under investigation,Wait for investigation completion or provide documentation
+CO,56,Service exceeds provider limitation,Review provider-specific coverage restrictions
+PI,215,Service requires biomarker testing,Complete required biomarker testing first
+OA,29,Invalid admission source code,Update admission source codes to current standards
+CR,33,Medicare Part D plan primary,Submit to Medicare Part D plan first
+PR,108,Patient coverage under audit,Wait for audit completion or provide supporting documentation
+CO,57,Service exceeds facility limitation,Review facility-specific coverage restrictions
+PI,216,Service requires companion diagnostic,Complete required companion diagnostic testing
+OA,30,Invalid discharge status code,Update discharge status codes to current standards
+CR,34,Medicare Part C plan primary,Submit to Medicare Part C plan first
+PR,109,Patient coverage under compliance review,Wait for compliance review or provide documentation
+CO,58,Service exceeds equipment limitation,Review equipment-specific coverage restrictions
+PI,217,Service requires molecular testing,Complete required molecular testing first
+OA,31,Invalid condition code,Update condition codes to current standards
+CR,35,Medicare Part B plan primary,Submit to Medicare Part B plan first
+PR,110,Patient coverage under quality review,Wait for quality review or provide clinical documentation
+CO,59,Service exceeds supply limitation,Review supply-specific coverage restrictions
+PI,218,Service requires pharmacogenomic testing,Complete required pharmacogenomic testing first
+OA,32,Invalid occurrence code,Update occurrence codes to current standards
+CR,36,Medicare Part A plan primary,Submit to Medicare Part A plan first
+PR,111,Patient coverage under utilization review,Wait for utilization review or provide medical necessity
+CO,60,Service exceeds therapy limitation,Review therapy-specific coverage restrictions
+PI,219,Service requires liquid biopsy,Complete required liquid biopsy testing first
+OA,33,Invalid value code,Update value codes to current standards
+CR,37,Medicare Original plan primary,Submit to Medicare Original plan first
+PR,112,Patient coverage under case management,Contact case manager for authorization
+CO,61,Service exceeds rehabilitation limitation,Review rehabilitation-specific coverage restrictions
+PI,220,Service requires tissue biopsy,Complete required tissue biopsy testing first
+OA,34,Invalid code qualifier,Update code qualifiers to current standards
+CR,38,Medicare Managed Care plan primary,Submit to Medicare Managed Care plan first
+PR,113,Patient coverage under disease management,Contact disease management program
+CO,62,Service exceeds home health limitation,Review home health-specific coverage restrictions
+PI,221,Service requires imaging study,Complete required imaging study first
+OA,35,Invalid code table,Update code tables to current standards
+CR,39,Medicare Fee-for-Service plan primary,Submit to Medicare Fee-for-Service plan first
+PR,114,Patient coverage under wellness program,Contact wellness program coordinator
+CO,63,Service exceeds hospice limitation,Review hospice-specific coverage restrictions
+PI,222,Service requires laboratory test,Complete required laboratory test first
+OA,36,Invalid code version,Update code versions to current standards
+CR,40,Medicare PPO plan primary,Submit to Medicare PPO plan first
+PR,115,Patient coverage under care coordination,Contact care coordinator for authorization
+CO,64,Service exceeds skilled nursing limitation,Review skilled nursing-specific coverage restrictions
+PI,223,Service requires pathology report,Complete required pathology report first
+OA,37,Invalid code format,Update code formats to current standards
+CR,41,Medicare HMO plan primary,Submit to Medicare HMO plan first
+PR,116,Patient coverage under medication therapy management,Contact medication therapy management program
+CO,65,Service exceeds assisted living limitation,Review assisted living-specific coverage restrictions
+PI,224,Service requires radiology report,Complete required radiology report first
+OA,38,Invalid code length,Update code lengths to current standards
+CR,42,Medicare POS plan primary,Submit to Medicare POS plan first
+PR,117,Patient coverage under chronic care management,Contact chronic care management program
+CO,66,Service exceeds adult day care limitation,Review adult day care-specific coverage restrictions
+PI,225,Service requires cardiology report,Complete required cardiology report first
+OA,39,Invalid code structure,Update code structures to current standards
+CR,43,Medicare EPO plan primary,Submit to Medicare EPO plan first
+PR,118,Patient coverage under transitional care management,Contact transitional care management program
+CO,67,Service exceeds respite care limitation,Review respite care-specific coverage restrictions
+PI,226,Service requires neurology report,Complete required neurology report first
+OA,40,Invalid code syntax,Update code syntax to current standards
+CR,44,Medicare SNP plan primary,Submit to Medicare SNP plan first
+PR,119,Patient coverage under behavioral health management,Contact behavioral health management program
+CO,68,Service exceeds palliative care limitation,Review palliative care-specific coverage restrictions
+PI,227,Service requires oncology report,Complete required oncology report first
+OA,41,Invalid code semantics,Update code semantics to current standards
+CR,45,Medicare PFFS plan primary,Submit to Medicare PFFS plan first
+PR,120,Patient coverage under substance abuse management,Contact substance abuse management program
+CO,69,Service exceeds end-of-life care limitation,Review end-of-life care-specific coverage restrictions
+PI,228,Service requires psychiatry report,Complete required psychiatry report first
+OA,42,Invalid code validation,Update code validation to current standards
+CR,46,Medicare MSA plan primary,Submit to Medicare MSA plan first
+PR,121,Patient coverage under diabetes management,Contact diabetes management program
+CO,70,Service exceeds wound care limitation,Review wound care-specific coverage restrictions
+PI,229,Service requires dermatology report,Complete required dermatology report first
+OA,43,Invalid code mapping,Update code mapping to current standards
+CR,47,Medicare Cost plan primary,Submit to Medicare Cost plan first
+PR,122,Patient coverage under hypertension management,Contact hypertension management program
+CO,71,Service exceeds physical therapy limitation,Review physical therapy-specific coverage restrictions
+PI,230,Service requires ophthalmology report,Complete required ophthalmology report first
+OA,44,Invalid code translation,Update code translation to current standards
+CR,48,Medicare Demo plan primary,Submit to Medicare Demo plan first
+PR,123,Patient coverage under asthma management,Contact asthma management program
+CO,72,Service exceeds occupational therapy limitation,Review occupational therapy-specific coverage restrictions
+PI,231,Service requires orthopedics report,Complete required orthopedics report first
+OA,45,Invalid code conversion,Update code conversion to current standards
+CR,49,Medicare Innovation plan primary,Submit to Medicare Innovation plan first
+PR,124,Patient coverage under COPD management,Contact COPD management program
+CO,73,Service exceeds speech therapy limitation,Review speech therapy-specific coverage restrictions
+PI,232,Service requires urology report,Complete required urology report first
+OA,46,Invalid code transformation,Update code transformation to current standards
+CR,50,Medicare ACO plan primary,Submit to Medicare ACO plan first
+PR,125,Patient coverage under heart failure management,Contact heart failure management program
+CO,74,Service exceeds chiropractic limitation,Review chiropractic-specific coverage restrictions
+PI,233,Service requires gastroenterology report,Complete required gastroenterology report first
+OA,47,Invalid code interpretation,Update code interpretation to current standards
+CR,51,Medicare PCMH plan primary,Submit to Medicare PCMH plan first
+PR,126,Patient coverage under kidney disease management,Contact kidney disease management program
+CO,75,Service exceeds acupuncture limitation,Review acupuncture-specific coverage restrictions
+PI,234,Service requires pulmonology report,Complete required pulmonology report first
+OA,48,Invalid code processing,Update code processing to current standards
+CR,52,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,127,Patient coverage under cancer management,Contact cancer management program
+CO,76,Service exceeds massage therapy limitation,Review massage therapy-specific coverage restrictions
+PI,235,Service requires endocrinology report,Complete required endocrinology report first
+OA,49,Invalid code handling,Update code handling to current standards
+CR,53,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,128,Patient coverage under mental health management,Contact mental health management program
+CO,77,Service exceeds naturopathic limitation,Review naturopathic-specific coverage restrictions
+PI,236,Service requires rheumatology report,Complete required rheumatology report first
+OA,50,Invalid code management,Update code management to current standards
+CR,54,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,129,Patient coverage under substance use management,Contact substance use management program
+CO,78,Service exceeds homeopathic limitation,Review homeopathic-specific coverage restrictions
+PI,237,Service requires nephrology report,Complete required nephrology report first
+OA,51,Invalid code administration,Update code administration to current standards
+CR,55,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,130,Patient coverage under pain management,Contact pain management program
+CO,79,Service exceeds alternative medicine limitation,Review alternative medicine-specific coverage restrictions
+PI,238,Service requires hepatology report,Complete required hepatology report first
+OA,52,Invalid code governance,Update code governance to current standards
+CR,56,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,131,Patient coverage under weight management,Contact weight management program
+CO,80,Service exceeds complementary medicine limitation,Review complementary medicine-specific coverage restrictions
+PI,239,Service requires infectious disease report,Complete required infectious disease report first
+OA,53,Invalid code oversight,Update code oversight to current standards
+CR,57,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,132,Patient coverage under nutrition management,Contact nutrition management program
+CO,81,Service exceeds integrative medicine limitation,Review integrative medicine-specific coverage restrictions
+PI,240,Service requires immunology report,Complete required immunology report first
+OA,54,Invalid code supervision,Update code supervision to current standards
+CR,58,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,133,Patient coverage under exercise management,Contact exercise management program
+CO,82,Service exceeds functional medicine limitation,Review functional medicine-specific coverage restrictions
+PI,241,Service requires allergy report,Complete required allergy report first
+OA,55,Invalid code control,Update code control to current standards
+CR,59,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,134,Patient coverage under sleep management,Contact sleep management program
+CO,83,Service exceeds regenerative medicine limitation,Review regenerative medicine-specific coverage restrictions
+PI,242,Service requires genetics report,Complete required genetics report first
+OA,56,Invalid code regulation,Update code regulation to current standards
+CR,60,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,135,Patient coverage under stress management,Contact stress management program
+CO,84,Service exceeds precision medicine limitation,Review precision medicine-specific coverage restrictions
+PI,243,Service requires genomics report,Complete required genomics report first
+OA,57,Invalid code compliance,Update code compliance to current standards
+CR,61,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,136,Patient coverage under mindfulness management,Contact mindfulness management program
+CO,85,Service exceeds personalized medicine limitation,Review personalized medicine-specific coverage restrictions
+PI,244,Service requires proteomics report,Complete required proteomics report first
+OA,58,Invalid code adherence,Update code adherence to current standards
+CR,62,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,137,Patient coverage under meditation management,Contact meditation management program
+CO,86,Service exceeds targeted therapy limitation,Review targeted therapy-specific coverage restrictions
+PI,245,Service requires metabolomics report,Complete required metabolomics report first
+OA,59,Invalid code conformance,Update code conformance to current standards
+CR,63,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,138,Patient coverage under yoga management,Contact yoga management program
+CO,87,Service exceeds immunotherapy limitation,Review immunotherapy-specific coverage restrictions
+PI,246,Service requires transcriptomics report,Complete required transcriptomics report first
+OA,60,Invalid code observance,Update code observance to current standards
+CR,64,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,139,Patient coverage under tai chi management,Contact tai chi management program
+CO,88,Service exceeds gene therapy limitation,Review gene therapy-specific coverage restrictions
+PI,247,Service requires epigenomics report,Complete required epigenomics report first
+OA,61,Invalid code following,Update code following to current standards
+CR,65,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,140,Patient coverage under qigong management,Contact qigong management program
+CO,89,Service exceeds cell therapy limitation,Review cell therapy-specific coverage restrictions
+PI,248,Service requires microbiomics report,Complete required microbiomics report first
+OA,62,Invalid code tracking,Update code tracking to current standards
+CR,66,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,141,Patient coverage under acupuncture management,Contact acupuncture management program
+CO,90,Service exceeds tissue engineering limitation,Review tissue engineering-specific coverage restrictions
+PI,249,Service requires viromics report,Complete required viromics report first
+OA,63,Invalid code monitoring,Update code monitoring to current standards
+CR,67,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,142,Patient coverage under chiropractic management,Contact chiropractic management program
+CO,91,Service exceeds organ transplantation limitation,Review organ transplantation-specific coverage restrictions
+PI,250,Service requires pharmacogenomics report,Complete required pharmacogenomics report first
+OA,64,Invalid code surveillance,Update code surveillance to current standards
+CR,68,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,143,Patient coverage under massage management,Contact massage management program
+CO,92,Service exceeds stem cell therapy limitation,Review stem cell therapy-specific coverage restrictions
+PI,251,Service requires nutrigenomics report,Complete required nutrigenomics report first
+OA,65,Invalid code inspection,Update code inspection to current standards
+CR,69,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,144,Patient coverage under reflexology management,Contact reflexology management program
+CO,93,Service exceeds CAR-T therapy limitation,Review CAR-T therapy-specific coverage restrictions
+PI,252,Service requires toxicogenomics report,Complete required toxicogenomics report first
+OA,66,Invalid code examination,Update code examination to current standards
+CR,70,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,145,Patient coverage under aromatherapy management,Contact aromatherapy management program
+CO,94,Service exceeds CRISPR therapy limitation,Review CRISPR therapy-specific coverage restrictions
+PI,253,Service requires environmental genomics report,Complete required environmental genomics report first
+OA,67,Invalid code assessment,Update code assessment to current standards
+CR,71,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,146,Patient coverage under hydrotherapy management,Contact hydrotherapy management program
+CO,95,Service exceeds mRNA therapy limitation,Review mRNA therapy-specific coverage restrictions
+PI,254,Service requires social genomics report,Complete required social genomics report first
+OA,68,Invalid code evaluation,Update code evaluation to current standards
+CR,72,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,147,Patient coverage under thermotherapy management,Contact thermotherapy management program
+CO,96,Service exceeds DNA therapy limitation,Review DNA therapy-specific coverage restrictions
+PI,255,Service requires behavioral genomics report,Complete required behavioral genomics report first
+OA,69,Invalid code analysis,Update code analysis to current standards
+CR,73,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,148,Patient coverage under cryotherapy management,Contact cryotherapy management program
+CO,97,Service exceeds RNA therapy limitation,Review RNA therapy-specific coverage restrictions
+PI,256,Service requires cognitive genomics report,Complete required cognitive genomics report first
+OA,70,Invalid code review,Update code review to current standards
+CR,74,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,149,Patient coverage under phototherapy management,Contact phototherapy management program
+CO,98,Service exceeds protein therapy limitation,Review protein therapy-specific coverage restrictions
+PI,257,Service requires emotional genomics report,Complete required emotional genomics report first
+OA,71,Invalid code audit,Update code audit to current standards
+CR,75,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,150,Patient coverage under magnetotherapy management,Contact magnetotherapy management program
+CO,99,Service exceeds peptide therapy limitation,Review peptide therapy-specific coverage restrictions
+PI,258,Service requires spiritual genomics report,Complete required spiritual genomics report first
+OA,72,Invalid code verification,Update code verification to current standards
+CR,76,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,151,Patient coverage under electrotherapy management,Contact electrotherapy management program
+CO,100,Service exceeds antibody therapy limitation,Review antibody therapy-specific coverage restrictions
+PI,259,Service requires cultural genomics report,Complete required cultural genomics report first
+OA,73,Invalid code validation,Update code validation to current standards
+CR,77,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,152,Patient coverage under ultrasound therapy management,Contact ultrasound therapy management program
+CO,101,Service exceeds vaccine therapy limitation,Review vaccine therapy-specific coverage restrictions
+PI,260,Service requires lifestyle genomics report,Complete required lifestyle genomics report first
+OA,74,Invalid code confirmation,Update code confirmation to current standards
+CR,78,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,153,Patient coverage under laser therapy management,Contact laser therapy management program
+CO,102,Service exceeds enzyme therapy limitation,Review enzyme therapy-specific coverage restrictions
+PI,261,Service requires dietary genomics report,Complete required dietary genomics report first
+OA,75,Invalid code authentication,Update code authentication to current standards
+CR,79,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,154,Patient coverage under infrared therapy management,Contact infrared therapy management program
+CO,103,Service exceeds hormone therapy limitation,Review hormone therapy-specific coverage restrictions
+PI,262,Service requires exercise genomics report,Complete required exercise genomics report first
+OA,76,Invalid code authorization,Update code authorization to current standards
+CR,80,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,155,Patient coverage under ultraviolet therapy management,Contact ultraviolet therapy management program
+CO,104,Service exceeds vitamin therapy limitation,Review vitamin therapy-specific coverage restrictions
+PI,263,Service requires sleep genomics report,Complete required sleep genomics report first
+OA,77,Invalid code approval,Update code approval to current standards
+CR,81,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,156,Patient coverage under X-ray therapy management,Contact X-ray therapy management program
+CO,105,Service exceeds mineral therapy limitation,Review mineral therapy-specific coverage restrictions
+PI,264,Service requires stress genomics report,Complete required stress genomics report first
+OA,78,Invalid code clearance,Update code clearance to current standards
+CR,82,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,157,Patient coverage under gamma ray therapy management,Contact gamma ray therapy management program
+CO,106,Service exceeds herbal therapy limitation,Review herbal therapy-specific coverage restrictions
+PI,265,Service requires meditation genomics report,Complete required meditation genomics report first
+OA,79,Invalid code permission,Update code permission to current standards
+CR,83,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,158,Patient coverage under proton therapy management,Contact proton therapy management program
+CO,107,Service exceeds botanical therapy limitation,Review botanical therapy-specific coverage restrictions
+PI,266,Service requires mindfulness genomics report,Complete required mindfulness genomics report first
+OA,80,Invalid code consent,Update code consent to current standards
+CR,84,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,159,Patient coverage under neutron therapy management,Contact neutron therapy management program
+CO,108,Service exceeds homeopathic therapy limitation,Review homeopathic therapy-specific coverage restrictions
+PI,267,Service requires yoga genomics report,Complete required yoga genomics report first
+OA,81,Invalid code agreement,Update code agreement to current standards
+CR,85,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,160,Patient coverage under carbon ion therapy management,Contact carbon ion therapy management program
+CO,109,Service exceeds naturopathic therapy limitation,Review naturopathic therapy-specific coverage restrictions
+PI,268,Service requires tai chi genomics report,Complete required tai chi genomics report first
+OA,82,Invalid code contract,Update code contract to current standards
+CR,86,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,161,Patient coverage under heavy ion therapy management,Contact heavy ion therapy management program
+CO,110,Service exceeds ayurvedic therapy limitation,Review ayurvedic therapy-specific coverage restrictions
+PI,269,Service requires qigong genomics report,Complete required qigong genomics report first
+OA,83,Invalid code covenant,Update code covenant to current standards
+CR,87,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,162,Patient coverage under boron neutron capture therapy management,Contact boron neutron capture therapy management program
+CO,111,Service exceeds traditional Chinese medicine therapy limitation,Review traditional Chinese medicine therapy-specific coverage restrictions
+PI,270,Service requires acupuncture genomics report,Complete required acupuncture genomics report first
+OA,84,Invalid code pledge,Update code pledge to current standards
+CR,88,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,163,Patient coverage under fast neutron therapy management,Contact fast neutron therapy management program
+CO,112,Service exceeds traditional Indian medicine therapy limitation,Review traditional Indian medicine therapy-specific coverage restrictions
+PI,271,Service requires chiropractic genomics report,Complete required chiropractic genomics report first
+OA,85,Invalid code promise,Update code promise to current standards
+CR,89,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,164,Patient coverage under slow neutron therapy management,Contact slow neutron therapy management program
+CO,113,Service exceeds traditional African medicine therapy limitation,Review traditional African medicine therapy-specific coverage restrictions
+PI,272,Service requires massage genomics report,Complete required massage genomics report first
+OA,86,Invalid code commitment,Update code commitment to current standards
+CR,90,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,165,Patient coverage under thermal neutron therapy management,Contact thermal neutron therapy management program
+CO,114,Service exceeds traditional Native American medicine therapy limitation,Review traditional Native American medicine therapy-specific coverage restrictions
+PI,273,Service requires reflexology genomics report,Complete required reflexology genomics report first
+OA,87,Invalid code obligation,Update code obligation to current standards
+CR,91,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,166,Patient coverage under epithermal neutron therapy management,Contact epithermal neutron therapy management program
+CO,115,Service exceeds traditional European medicine therapy limitation,Review traditional European medicine therapy-specific coverage restrictions
+PI,274,Service requires aromatherapy genomics report,Complete required aromatherapy genomics report first
+OA,88,Invalid code duty,Update code duty to current standards
+CR,92,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,167,Patient coverage under hyperthermal neutron therapy management,Contact hyperthermal neutron therapy management program
+CO,116,Service exceeds traditional Middle Eastern medicine therapy limitation,Review traditional Middle Eastern medicine therapy-specific coverage restrictions
+PI,275,Service requires hydrotherapy genomics report,Complete required hydrotherapy genomics report first
+OA,89,Invalid code responsibility,Update code responsibility to current standards
+CR,93,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,168,Patient coverage under hypothermal neutron therapy management,Contact hypothermal neutron therapy management program
+CO,117,Service exceeds traditional South American medicine therapy limitation,Review traditional South American medicine therapy-specific coverage restrictions
+PI,276,Service requires thermotherapy genomics report,Complete required thermotherapy genomics report first
+OA,90,Invalid code accountability,Update code accountability to current standards
+CR,94,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,169,Patient coverage under isothermal neutron therapy management,Contact isothermal neutron therapy management program
+CO,118,Service exceeds traditional Australian medicine therapy limitation,Review traditional Australian medicine therapy-specific coverage restrictions
+PI,277,Service requires cryotherapy genomics report,Complete required cryotherapy genomics report first
+OA,91,Invalid code liability,Update code liability to current standards
+CR,95,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,170,Patient coverage under adiabatic neutron therapy management,Contact adiabatic neutron therapy management program
+CO,119,Service exceeds traditional Pacific Islander medicine therapy limitation,Review traditional Pacific Islander medicine therapy-specific coverage restrictions
+PI,278,Service requires phototherapy genomics report,Complete required phototherapy genomics report first
+OA,92,Invalid code answerability,Update code answerability to current standards
+CR,96,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,171,Patient coverage under isentropic neutron therapy management,Contact isentropic neutron therapy management program
+CO,120,Service exceeds traditional Arctic medicine therapy limitation,Review traditional Arctic medicine therapy-specific coverage restrictions
+PI,279,Service requires magnetotherapy genomics report,Complete required magnetotherapy genomics report first
+OA,93,Invalid code amenability,Update code amenability to current standards
+CR,97,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,172,Patient coverage under isobaric neutron therapy management,Contact isobaric neutron therapy management program
+CO,121,Service exceeds traditional Antarctic medicine therapy limitation,Review traditional Antarctic medicine therapy-specific coverage restrictions
+PI,280,Service requires electrotherapy genomics report,Complete required electrotherapy genomics report first
+OA,94,Invalid code susceptibility,Update code susceptibility to current standards
+CR,98,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,173,Patient coverage under isochoric neutron therapy management,Contact isochoric neutron therapy management program
+CO,122,Service exceeds traditional Desert medicine therapy limitation,Review traditional Desert medicine therapy-specific coverage restrictions
+PI,281,Service requires ultrasound therapy genomics report,Complete required ultrasound therapy genomics report first
+OA,95,Invalid code vulnerability,Update code vulnerability to current standards
+CR,99,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,174,Patient coverage under isometric neutron therapy management,Contact isometric neutron therapy management program
+CO,123,Service exceeds traditional Mountain medicine therapy limitation,Review traditional Mountain medicine therapy-specific coverage restrictions
+PI,282,Service requires laser therapy genomics report,Complete required laser therapy genomics report first
+OA,96,Invalid code exposure,Update code exposure to current standards
+CR,100,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,175,Patient coverage under isotonic neutron therapy management,Contact isotonic neutron therapy management program
+CO,124,Service exceeds traditional Forest medicine therapy limitation,Review traditional Forest medicine therapy-specific coverage restrictions
+PI,283,Service requires infrared therapy genomics report,Complete required infrared therapy genomics report first
+OA,97,Invalid code risk,Update code risk to current standards
+CR,101,Medicare TCM plan primary,Submit to Medicare TCM plan first
+PR,176,Patient coverage under isoelectric neutron therapy management,Contact isoelectric neutron therapy management program
+CO,125,Service exceeds traditional Ocean medicine therapy limitation,Review traditional Ocean medicine therapy-specific coverage restrictions
+PI,284,Service requires ultraviolet therapy genomics report,Complete required ultraviolet therapy genomics report first
+OA,98,Invalid code hazard,Update code hazard to current standards
+CR,102,Medicare BHI plan primary,Submit to Medicare BHI plan first
+PR,177,Patient coverage under isomagnetic neutron therapy management,Contact isomagnetic neutron therapy management program
+CO,126,Service exceeds traditional River medicine therapy limitation,Review traditional River medicine therapy-specific coverage restrictions
+PI,285,Service requires X-ray therapy genomics report,Complete required X-ray therapy genomics report first
+OA,99,Invalid code peril,Update code peril to current standards
+CR,103,Medicare CCM plan primary,Submit to Medicare CCM plan first
+PR,178,Patient coverage under isoelectric neutron therapy management,Contact isoelectric neutron therapy management program
+CO,127,Service exceeds traditional Lake medicine therapy limitation,Review traditional Lake medicine therapy-specific coverage restrictions
+PI,286,Service requires gamma ray therapy genomics report,Complete required gamma ray therapy genomics report first
+OA,100,Invalid code danger,Update code danger to current standards
+CR,104,Medicare TCM plan primary,Submit to Medicare TCM plan first
