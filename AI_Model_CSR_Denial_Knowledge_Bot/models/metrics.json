@@ -1,0 +1,47 @@
+{
+  "test_accuracy": 0.9999633027522936,
+  "class_report": {
+    "denial_lookup": {
+      "precision": 0.9991974317817014,
+      "recall": 1.0,
+      "f1-score": 0.9995985547972702,
+      "support": 1245.0
+    },
+    "general": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1-score": 0.8888888888888888,
+      "support": 5.0
+    },
+    "member_lookup": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 8000.0
+    },
+    "plan_lookup": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 18000.0
+    },
+    "accuracy": 0.9999633027522936,
+    "macro avg": {
+      "precision": 0.9997993579454254,
+      "recall": 0.95,
+      "f1-score": 0.9721218609215397,
+      "support": 27250.0
+    },
+    "weighted avg": {
+      "precision": 0.9999633322043383,
+      "recall": 0.9999633027522936,
+      "f1-score": 0.9999612713822769,
+      "support": 27250.0
+    }
+  },
+  "trained_at": "2026-02-20T22:30:46.801370+00:00",
+  "num_training_examples": 136248,
+  "num_denial_codes": 415,
+  "num_members": 10000,
+  "num_plans": 100
+}

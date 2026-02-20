@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * Conversation entity represents a single exchange between a user and the AI.
@@ -15,7 +15,10 @@ import java.util.Date;
 @Builder
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
-@Table(name = "conversations")
+@Table(name = "conversations", indexes = {
+        @Index(name = "idx_conversation_user_bucket", columnList = "user_id, bucket_date_id"),
+        @Index(name = "idx_conversation_user_created", columnList = "user_id, created_at")
+})
 public class Conversation {
 
     @Id
@@ -36,23 +39,36 @@ public class Conversation {
     @Column(name = "output_type", nullable = false)
     private String outputType;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt;
+    /**
+     * Daily partition bucket in user's local date format: YYYY-MM-DD
+     */
+    @Column(name = "bucket_date_id", nullable = false, length = 10)
+    private String bucketDateId;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "timezone_offset_minutes", nullable = false)
+    private Integer timezoneOffsetMinutes;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
     @Column(name = "updated_at")
-    private Date updatedAt;
+    private Instant updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        Date now = new Date();
+        Instant now = Instant.now();
         this.createdAt = now;
         this.updatedAt = now;
+        if (this.timezoneOffsetMinutes == null) {
+            this.timezoneOffsetMinutes = 0;
+        }
+        if (this.bucketDateId == null || this.bucketDateId.isBlank()) {
+            this.bucketDateId = "1970-01-01";
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = new Date();
+        this.updatedAt = Instant.now();
     }
 }

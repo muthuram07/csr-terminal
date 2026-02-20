@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -34,7 +33,8 @@ public class AuthController {
      * Handles user registration.
      */
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest, BindingResult bindingResult) {
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest,
+            BindingResult bindingResult) {
         logger.info("📝 Registration attempt for username: {}", registerRequest.getUsername());
 
         if (bindingResult.hasErrors()) {
@@ -56,7 +56,8 @@ public class AuthController {
             }
         } catch (Exception e) {
             logger.error("❌ Registration error", e);
-            return ResponseEntity.internalServerError().body(new RegisterResponse(false, "Registration failed: " + e.getMessage()));
+            return ResponseEntity.internalServerError()
+                    .body(new RegisterResponse(false, "Registration failed: " + e.getMessage()));
         }
     }
 
@@ -64,7 +65,8 @@ public class AuthController {
      * Handles user login.
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
+            BindingResult bindingResult) {
         logger.info("🔐 Login attempt for username: {}", loginRequest.getUsername());
 
         if (bindingResult.hasErrors()) {
@@ -80,15 +82,18 @@ public class AuthController {
             if (isValid) {
                 String token = authService.generateToken(loginRequest.getUsername());
                 logger.info("✅ Login successful for: {}", loginRequest.getUsername());
-                return ResponseEntity.ok(new LoginResponse(token, loginRequest.getUsername(), "Login successful", true));
+                return ResponseEntity
+                        .ok(new LoginResponse(token, loginRequest.getUsername(), "Login successful", true));
             } else {
-                String errorMessage = authService.getLoginErrorMessage(loginRequest.getUsername(), loginRequest.getPassword());
+                String errorMessage = authService.getLoginErrorMessage(loginRequest.getUsername(),
+                        loginRequest.getPassword());
                 logger.warn("❌ Login failed: {}", errorMessage);
                 return ResponseEntity.status(401).body(new LoginResponse(null, null, errorMessage, false));
             }
         } catch (Exception e) {
             logger.error("❌ Login error", e);
-            return ResponseEntity.internalServerError().body(new LoginResponse(null, null, "Login failed: " + e.getMessage(), false));
+            return ResponseEntity.internalServerError()
+                    .body(new LoginResponse(null, null, "Login failed: " + e.getMessage(), false));
         }
     }
 
@@ -103,11 +108,13 @@ public class AuthController {
                 String username = authService.getUsernameFromToken(token);
                 return ResponseEntity.ok(new LoginResponse(token, username, "Token is valid", true));
             } else {
-                return ResponseEntity.status(401).body(new LoginResponse(null, null, "Invalid or expired token", false));
+                return ResponseEntity.status(401)
+                        .body(new LoginResponse(null, null, "Invalid or expired token", false));
             }
         } catch (Exception e) {
             logger.error("❌ Token validation error", e);
-            return ResponseEntity.internalServerError().body(new LoginResponse(null, null, "Token validation failed: " + e.getMessage(), false));
+            return ResponseEntity.internalServerError()
+                    .body(new LoginResponse(null, null, "Token validation failed: " + e.getMessage(), false));
         }
     }
 
@@ -122,11 +129,13 @@ public class AuthController {
             if (username != null && authService.validateToken(token)) {
                 return ResponseEntity.ok(new LoginResponse(token, username, "User retrieved successfully", true));
             } else {
-                return ResponseEntity.status(401).body(new LoginResponse(null, null, "Invalid or expired token", false));
+                return ResponseEntity.status(401)
+                        .body(new LoginResponse(null, null, "Invalid or expired token", false));
             }
         } catch (Exception e) {
             logger.error("❌ Failed to get user", e);
-            return ResponseEntity.internalServerError().body(new LoginResponse(null, null, "Failed to get user: " + e.getMessage(), false));
+            return ResponseEntity.internalServerError()
+                    .body(new LoginResponse(null, null, "Failed to get user: " + e.getMessage(), false));
         }
     }
 
@@ -145,7 +154,8 @@ public class AuthController {
             return ResponseEntity.ok(new LoginResponse(null, username, "Logout successful", true));
         } catch (Exception e) {
             logger.error("❌ Logout error", e);
-            return ResponseEntity.internalServerError().body(new LoginResponse(null, null, "Logout failed: " + e.getMessage(), false));
+            return ResponseEntity.internalServerError()
+                    .body(new LoginResponse(null, null, "Logout failed: " + e.getMessage(), false));
         }
     }
 
@@ -155,16 +165,15 @@ public class AuthController {
     @GetMapping("/test-validation")
     public ResponseEntity<String> testValidation() {
         return ResponseEntity.ok(
-            "🧪 API Validation Testing Guide:\n" +
-            "POST /api/auth/register - Test with invalid data:\n" +
-            "  - Username: '12', '123456', '1user'\n" +
-            "  - Email: 'invalid-email', 'test@'\n" +
-            "  - Password: 'pass', 'password', 'Test 123!'\n\n" +
-            "POST /api/auth/login - Test with invalid data:\n" +
-            "  - Username: '', 'ab'\n" +
-            "  - Password: '', 'pass'\n" +
-            "  - Credentials: 'nonexistent user' / 'Test123!'\n\n" +
-            "🎉 NEW: Username spaces are now allowed!"
-        );
+                "🧪 API Validation Testing Guide:\n" +
+                        "POST /api/auth/register - Test with invalid data:\n" +
+                        "  - Username: '12', '123456', '1user'\n" +
+                        "  - Email: 'invalid-email', 'test@'\n" +
+                        "  - Password: 'pass', 'password', 'Test 123!'\n\n" +
+                        "POST /api/auth/login - Test with invalid data:\n" +
+                        "  - Username: '', 'ab'\n" +
+                        "  - Password: '', 'pass'\n" +
+                        "  - Credentials: 'nonexistent user' / 'Test123!'\n\n" +
+                        "🎉 NEW: Username spaces are now allowed!");
     }
 }

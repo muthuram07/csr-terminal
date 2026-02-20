@@ -1,49 +1,53 @@
 package com.denial.bot.controller;
 
-import java.sql.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.denial.bot.entity.Conversation;
 import com.denial.bot.entity.User;
 import com.denial.bot.repository.ConversationRepository;
-import com.denial.bot.service.AuthService;
+import com.denial.bot.repository.UserRepository;
 import com.denial.bot.service.SmartQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Controller for handling smart query processing and conversation history.
  */
 @RestController
 @RequestMapping("/api/smart")
-@CrossOrigin(origins = "*")
 public class SmartQueryController {
 
     private static final Logger logger = LoggerFactory.getLogger(SmartQueryController.class);
+
+    @Value("${app.disable-auth:false}")
+    private boolean disableAuth;
 
     @Autowired
     private SmartQueryService smartQueryService;
 
     @Autowired
-    private AuthService authService;
+    private ConversationRepository conversationRepository;
 
     @Autowired
-    private ConversationRepository conversationRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -51,25 +55,26 @@ public class SmartQueryController {
     /**
      * Saves a conversation to the database.
      */
-    public void saveConversation(String token, String userInput, Map<String, Object> response) {
+    public void saveConversation(User user, String userInput, Map<String, Object> response, int timezoneOffsetMinutes) {
         try {
-            String username = authService.getUsernameFromToken(token);
-            Optional<User> userOpt = authService.getUserByUsername(username);
+            Map<String, Object> innerResponse = (Map<String, Object>) response.getOrDefault("response", Map.of());
+            String outputType = String.valueOf(innerResponse.getOrDefault("type", "general"));
+            String aiOutput = objectMapper.writeValueAsString(response);
 
-            if (userOpt.isPresent()) {
-                Map<String, Object> innerResponse = (Map<String, Object>) response.get("response");
-                String outputType = innerResponse.get("type").toString();
-                String aiOutput = objectMapper.writeValueAsString(response);
+            Conversation convo = new Conversation();
+            convo.setUser(user);
+            convo.setUserInput(userInput);
+            convo.setAiOutput(aiOutput);
+            convo.setOutputType(outputType);
+            convo.setTimezoneOffsetMinutes(timezoneOffsetMinutes);
 
-                Conversation convo = new Conversation();
-                convo.setUser(userOpt.get());
-                convo.setUserInput(userInput);
-                convo.setAiOutput(aiOutput);
-                convo.setOutputType(outputType);
+            LocalDate localDate = Instant.now()
+                    .atOffset(ZoneOffset.ofTotalSeconds(timezoneOffsetMinutes * 60))
+                    .toLocalDate();
+            convo.setBucketDateId(localDate.toString());
 
-                conversationRepository.save(convo);
-                logger.info("💾 Conversation saved for user: {}", username);
-            }
+            conversationRepository.save(convo);
+            logger.info("💾 Conversation saved for user: {} in bucket {}", user.getUsername(), convo.getBucketDateId());
         } catch (Exception e) {
             logger.error("❌ Failed to save conversation", e);
         }
@@ -78,36 +83,51 @@ public class SmartQueryController {
     /**
      * Processes a smart query and returns AI-generated response.
      */
+
     @PostMapping("/query")
     public ResponseEntity<?> processSmartQuery(
             @RequestBody Map<String, Object> request,
-            @RequestHeader("Authorization") String token) {
+            HttpServletRequest httpServletRequest) {
 
         try {
-            token = token.replace("Bearer ", "");
+            User user = (User) httpServletRequest.getAttribute("authenticatedUser");
 
-            if (!authService.validateToken(token)) {
+            // Check for auth bypass (Dev Mode)
+            if (disableAuth && user == null) {
+                logger.warn("DEV MODE: Bypass auth for /query. Using dummy user.");
+                user = userRepository.findByUsername("dev-user")
+                        .orElseGet(() -> {
+                            User newUser = new User("dev-user", "dev@local", "pass", "ADMIN", true);
+                            newUser.setFirebaseUid("dev-uid");
+                            return userRepository.save(newUser);
+                        });
+            }
+
+            if (user == null) {
                 return ResponseEntity.status(401).body(Map.of("success", false, "error", "Unauthorized access"));
             }
 
             String query = (String) request.get("query");
             String queryType = (String) request.get("type");
+            Map<String, Object> medicalContext = (Map<String, Object>) request.get("medicalContext");
+            int timezoneOffsetMinutes = ((Number) request.getOrDefault("timezoneOffsetMinutes", 0)).intValue();
 
             if (query == null || query.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Query is required"));
             }
 
-            Map<String, Object> response = smartQueryService.processQuery(query, queryType);
+            Map<String, Object> response = smartQueryService.processQuery(query, queryType, medicalContext);
 
             if ((Boolean) response.getOrDefault("success", false)) {
-                saveConversation(token, query, response);
+                saveConversation(user, query, response, timezoneOffsetMinutes);
             }
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             logger.error("❌ Failed to process smart query", e);
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", "Failed to process query: " + e.getMessage()));
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "error", "Failed to process query: " + e.getMessage()));
         }
     }
 
@@ -115,27 +135,20 @@ public class SmartQueryController {
      * Retrieves full conversation history for the authenticated user.
      */
     @GetMapping("/history")
-    public ResponseEntity<?> getConversationHistory(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getConversationHistory(HttpServletRequest request) {
         try {
-            token = token.replace("Bearer ", "");
-
-            if (!authService.validateToken(token)) {
+            User authenticatedUser = (User) request.getAttribute("authenticatedUser");
+            if (authenticatedUser == null) {
                 return ResponseEntity.status(401).body(Map.of("success", false, "error", "Unauthorized access"));
             }
 
-            String username = authService.getUsernameFromToken(token);
-            Optional<User> userOpt = authService.getUserByUsername(username);
-
-            if (userOpt.isPresent()) {
-                List<Conversation> history = conversationRepository.findByUser(userOpt.get());
-                return ResponseEntity.ok(Map.of("success", true, "count", history.size(), "data", history));
-            } else {
-                return ResponseEntity.status(404).body(Map.of("success", false, "error", "User not found"));
-            }
+            List<Conversation> history = conversationRepository.findByUserOrderByCreatedAtDesc(authenticatedUser);
+            return ResponseEntity.ok(Map.of("success", true, "count", history.size(), "data", history));
 
         } catch (Exception e) {
             logger.error("❌ Failed to fetch conversation history", e);
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", "Failed to fetch history: " + e.getMessage()));
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "error", "Failed to fetch history: " + e.getMessage()));
         }
     }
 
@@ -145,28 +158,22 @@ public class SmartQueryController {
     @GetMapping("/history/type/{outputType}")
     public ResponseEntity<?> getConversationByType(
             @PathVariable String outputType,
-            @RequestHeader("Authorization") String token) {
+            HttpServletRequest request) {
 
         try {
-            token = token.replace("Bearer ", "");
-
-            if (!authService.validateToken(token)) {
+            User authenticatedUser = (User) request.getAttribute("authenticatedUser");
+            if (authenticatedUser == null) {
                 return ResponseEntity.status(401).body(Map.of("success", false, "error", "Unauthorized access"));
             }
 
-            String username = authService.getUsernameFromToken(token);
-            Optional<User> userOpt = authService.getUserByUsername(username);
-
-            if (userOpt.isPresent()) {
-                List<Conversation> filtered = conversationRepository.findByUserAndOutputType(userOpt.get(), outputType);
-                return ResponseEntity.ok(Map.of("success", true, "count", filtered.size(), "data", filtered));
-            } else {
-                return ResponseEntity.status(404).body(Map.of("success", false, "error", "User not found"));
-            }
+            List<Conversation> filtered = conversationRepository
+                    .findByUserAndOutputTypeOrderByCreatedAtDesc(authenticatedUser, outputType);
+            return ResponseEntity.ok(Map.of("success", true, "count", filtered.size(), "data", filtered));
 
         } catch (Exception e) {
             logger.error("❌ Failed to fetch filtered conversation history", e);
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", "Failed to fetch filtered history: " + e.getMessage()));
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "error", "Failed to fetch filtered history: " + e.getMessage()));
         }
     }
 
@@ -175,34 +182,100 @@ public class SmartQueryController {
      */
     @GetMapping("/history/date-range")
     public ResponseEntity<?> getConversationByDateRange(
-            @RequestHeader("Authorization") String token,
+            HttpServletRequest request,
             @RequestParam("start") String startDateStr,
-            @RequestParam("end") String endDateStr) {
+            @RequestParam("end") String endDateStr,
+            @RequestParam(value = "timezoneOffsetMinutes", defaultValue = "0") int timezoneOffsetMinutes) {
 
         try {
-            token = token.replace("Bearer ", "");
-
-            if (!authService.validateToken(token)) {
+            User authenticatedUser = (User) request.getAttribute("authenticatedUser");
+            if (authenticatedUser == null) {
                 return ResponseEntity.status(401).body(Map.of("success", false, "error", "Unauthorized access"));
             }
 
-            String username = authService.getUsernameFromToken(token);
-            Optional<User> userOpt = authService.getUserByUsername(username);
+            LocalDate startLocal = LocalDate.parse(startDateStr);
+            LocalDate endLocal = LocalDate.parse(endDateStr);
 
-            if (userOpt.isEmpty()) {
-                return ResponseEntity.status(404).body(Map.of("success", false, "error", "User not found"));
-            }
+            List<Conversation> filtered = conversationRepository.findByUserAndBucketRange(
+                    authenticatedUser,
+                    startLocal.toString(),
+                    endLocal.toString());
 
-            Date startDate = Date.valueOf(startDateStr);
-            Date endDate = Date.valueOf(endDateStr);
-
-            List<Conversation> filtered = conversationRepository.findByUserAndDateRange(userOpt.get(), startDate, endDate);
-
-            return ResponseEntity.ok(Map.of("success", true, "count", filtered.size(), "data", filtered));
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "count", filtered.size(),
+                    "startBucket", startLocal.toString(),
+                    "endBucket", endLocal.toString(),
+                    "timezoneOffsetMinutes", timezoneOffsetMinutes,
+                    "data", filtered));
 
         } catch (Exception e) {
             logger.error("❌ Failed to fetch date-filtered conversation history", e);
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "error", "Failed to fetch date-filtered history: " + e.getMessage()));
+            return ResponseEntity.internalServerError().body(
+                    Map.of("success", false, "error", "Failed to fetch date-filtered history: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/history/today")
+    public ResponseEntity<?> getConversationToday(
+            HttpServletRequest request,
+            @RequestParam(value = "timezoneOffsetMinutes", defaultValue = "0") int timezoneOffsetMinutes) {
+        try {
+            User authenticatedUser = (User) request.getAttribute("authenticatedUser");
+            if (authenticatedUser == null) {
+                return ResponseEntity.status(401).body(Map.of("success", false, "error", "Unauthorized access"));
+            }
+
+            LocalDate today = Instant.now()
+                    .atOffset(ZoneOffset.ofTotalSeconds(timezoneOffsetMinutes * 60))
+                    .toLocalDate();
+
+            List<Conversation> filtered = conversationRepository.findByUserAndBucketRange(
+                    authenticatedUser,
+                    today.toString(),
+                    today.toString());
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "bucket", today.toString(),
+                    "count", filtered.size(),
+                    "data", filtered));
+        } catch (Exception e) {
+            logger.error("❌ Failed to fetch today's history", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "error", "Failed to fetch today's history: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/recommendations")
+    public ResponseEntity<?> getRecommendations(@RequestBody Map<String, Object> request) {
+        try {
+            String input = String.valueOf(request.getOrDefault("input", ""));
+            Map<String, Object> medicalContext = (Map<String, Object>) request.get("medicalContext");
+            int limit = ((Number) request.getOrDefault("limit", 5)).intValue();
+
+            List<String> suggestions = smartQueryService.recommendQueries(input, medicalContext, limit);
+            return ResponseEntity.ok(Map.of("success", true, "suggestions", suggestions));
+        } catch (Exception e) {
+            logger.error("❌ Failed to generate recommendations", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("success", false, "error", "Failed to generate recommendations"));
+        }
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<?> health() {
+        boolean healthy = smartQueryService.checkMLApiHealth();
+        return ResponseEntity.ok(Map.of("success", healthy));
+    }
+
+    @GetMapping("/train-status")
+    public ResponseEntity<?> trainStatus() {
+        return ResponseEntity.ok(smartQueryService.getTrainStatus());
+    }
+
+    @GetMapping("/available-data")
+    public ResponseEntity<?> availableData() {
+        return ResponseEntity.ok(smartQueryService.getAvailableData());
     }
 }

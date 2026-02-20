@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { API_ENDPOINTS } from '../../config/api';
+import { useAuth } from '../../context/AuthContext';
+import '../../styles/terminal.css';
+import './TerminalAuth.css';
+import GoogleAuthButton from './GoogleAuthButton';
 
 function SignUp() {
   const [username, setUsername] = useState('');
@@ -13,6 +16,9 @@ function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [activeField, setActiveField] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const { registerWithFirebase } = useAuth();
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -24,13 +30,13 @@ function SignUp() {
       newFieldErrors.username = 'Username is required';
     } else {
       if (username.length < 3) {
-        newFieldErrors.username = 'Username must be at least 3 characters';
+        newFieldErrors.username = 'Min 3 characters';
       } else if (username.length > 20) {
-        newFieldErrors.username = 'Username must not exceed 20 characters';
+        newFieldErrors.username = 'Max 20 characters';
       } else if (!/^[a-zA-Z][a-zA-Z0-9_ ]*$/.test(username)) {
-        newFieldErrors.username = 'Must start with letter, contain only letters, numbers, spaces';
+        newFieldErrors.username = 'Invalid format';
       } else if (/^\d+$/.test(username)) {
-        newFieldErrors.username = 'Username cannot be only numbers';
+        newFieldErrors.username = 'Cannot be only numbers';
       }
     }
 
@@ -39,9 +45,9 @@ function SignUp() {
     } else {
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
-        newFieldErrors.email = 'Please enter a valid email address';
+        newFieldErrors.email = 'Invalid email';
       } else if (email.length > 100) {
-        newFieldErrors.email = 'Email must not exceed 100 characters';
+        newFieldErrors.email = 'Max 100 characters';
       }
     }
 
@@ -49,16 +55,16 @@ function SignUp() {
       newFieldErrors.password = 'Password is required';
     } else {
       if (password.length < 6) {
-        newFieldErrors.password = 'Password must be at least 6 characters';
+        newFieldErrors.password = 'Min 6 characters';
       } else if (password.length > 50) {
-        newFieldErrors.password = 'Password must not exceed 50 characters';
+        newFieldErrors.password = 'Max 50 characters';
       } else if (!/(?=.*[A-Za-z])(?=.*\d)/.test(password)) {
-        newFieldErrors.password = 'Password must contain at least one letter and number';
+        newFieldErrors.password = 'Need letter and number';
       }
     }
 
     if (!confirmPassword) {
-      newFieldErrors.confirmPassword = 'Please confirm your password';
+      newFieldErrors.confirmPassword = 'Confirm password';
     } else if (password !== confirmPassword) {
       newFieldErrors.confirmPassword = 'Passwords do not match';
     }
@@ -76,60 +82,53 @@ function SignUp() {
       setIsLoading(false);
       return;
     }
-    
+
     try {
-      const response = await fetch(API_ENDPOINTS.SIGNUP, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username.trim(),
-          email: email.trim(),
-          password: password
-        }),
-      });
+      const result = await registerWithFirebase(email.trim(), password, username.trim());
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (result.success) {
+        setSuccess(true);
         setIsLoading(false);
         setUsername(''); setEmail(''); setPassword(''); setConfirmPassword('');
-        setTimeout(() => navigate('/signin'), 2000);
+        setTimeout(() => navigate('/signin'), 2500);
       } else {
         const newFieldErrors = { username: '', email: '', password: '', confirmPassword: '', general: [] };
-        
-        if (data.message) {
-          const errorMessages = data.message.split('; ');
-          
+
+        if (result.message) {
+          const errorMessages = result.message.split('; ');
+
           errorMessages.forEach(message => {
             const trimmedMessage = message.trim();
-            
+
             if (trimmedMessage === 'Username is already taken') {
-              newFieldErrors.username = 'Username already taken. Try another one.';
+              newFieldErrors.username = 'Username taken';
             } else if (trimmedMessage === 'Email is already registered') {
-              newFieldErrors.email = 'Email already registered. Try signing in.';
+              newFieldErrors.email = 'Email registered';
+            } else if (trimmedMessage === 'Email already in use') {
+              newFieldErrors.email = 'Email registered';
             } else if (trimmedMessage === 'Username is required') {
-              newFieldErrors.username = 'Username is required';
+              newFieldErrors.username = 'Username required';
             } else if (trimmedMessage === 'Email is required') {
-              newFieldErrors.email = 'Email is required';
+              newFieldErrors.email = 'Email required';
             } else if (trimmedMessage === 'Password is required') {
-              newFieldErrors.password = 'Password is required';
+              newFieldErrors.password = 'Password required';
             } else if (trimmedMessage === 'Invalid email format') {
-              newFieldErrors.email = 'Please enter a valid email address';
+              newFieldErrors.email = 'Invalid email';
             } else if (trimmedMessage.includes('Network error')) {
-              newFieldErrors.general.push('Connection failed. Check your internet.');
+              newFieldErrors.general.push('Connection failed');
             } else {
               newFieldErrors.general.push(trimmedMessage);
             }
           });
         } else {
-          newFieldErrors.general = ['Signup failed. Please try again.'];
+          newFieldErrors.general = ['Signup failed'];
         }
         setFieldErrors(newFieldErrors);
       }
     } catch (error) {
       setFieldErrors({
         username: '', email: '', password: '', confirmPassword: '',
-        general: ['Unexpected error. Please try again.']
+        general: ['Unexpected error']
       });
     } finally {
       setIsLoading(false);
@@ -167,209 +166,311 @@ function SignUp() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-layout">
-        {/* Left Side - Clean MNC Branding */}
-        <div className="auth-branding">
-          <div className="branding-content">
-            <div className="brand-logo">
-              <div className="brand-icon-wrapper">
-                <span className="brand-icon">🤖</span>
-                <div className="icon-glow"></div>
+    <div className="terminal-auth-page">
+      {/* Terminal Header Bar */}
+      <div className="terminal-top-bar">
+        <div className="terminal-top-bar-content">
+          <span className="term-green term-bold">CSR_DENIAL_KNOWLEDGE_BOT</span>
+          <span className="term-dim">v1.0.0</span>
+        </div>
+      </div>
+
+      <div className="bento-grid auth-bento-grid">
+        {/* Left Side - System Info Bento */}
+        <div className="bento-cell-2x2 terminal-window">
+          <div className="terminal-header">
+            <span className="terminal-title">┌─ NEW USER REGISTRATION ─┐</span>
+          </div>
+          <div className="terminal-body">
+            <div className="terminal-ascii-art">
+              <pre className="term-green">
+                {`
+  ╔═══════════════════════╗
+  ║  USER CREATION TOOL   ║
+  ╚═══════════════════════╝
+`}
+              </pre>
+            </div>
+
+            <div className="system-info-lines">
+              <div className="terminal-prompt">
+                <span className="term-green">COMMAND:</span>
+                <span className="term-white">sudo useradd --create</span>
               </div>
-              <h1 className="brand-name">CSR Denial Knowledge Bot</h1>
-              <p className="brand-tagline">Intelligent Customer Support Assistant</p>
+              <div className="terminal-prompt">
+                <span className="term-green">ACTION:</span>
+                <span className="term-white">Create new account</span>
+              </div>
+              <div className="terminal-prompt">
+                <span className="term-green">PRIVILEGES:</span>
+                <span className="term-yellow">STANDARD_USER</span>
+              </div>
+              <div className="terminal-prompt">
+                <span className="term-green">ACCESS:</span>
+                <span className="term-matrix-green">GRANTED</span>
+              </div>
             </div>
-            
-            <div className="auth-hero">
-              <h2 className="auth-hero-title">Join the Innovation</h2>
-              <p className="auth-hero-description">
-                Revolutionize your customer service operations with cutting-edge AI technology 
-                that empowers your team to deliver unprecedented support excellence.
-              </p>
+
+            <div className="terminal-divider">
+              ─────────────────────────────────
             </div>
-            
-            <div className="auth-navigation">
-              <Link to="/" className="home-button">
-                <span className="home-icon">🏠</span>
-                <span>Back to Home</span>
+
+            <div className="terminal-help-text">
+              <p className="term-green term-bold">REQUIREMENTS:</p>
+              <p className="term-dim">• Username: 3-20 chars</p>
+              <p className="term-dim">• Email: Valid format</p>
+              <p className="term-dim">• Password: 6+ chars</p>
+              <p className="term-dim">• Must contain letter + number</p>
+            </div>
+
+            <div className="terminal-divider">
+              ─────────────────────────────────
+            </div>
+
+            <div className="terminal-help-text">
+              <p className="term-green term-bold">BENEFITS:</p>
+              <p className="term-dim">✓ AI-Powered CSR Assistant</p>
+              <p className="term-dim">✓ Denial Code Analysis</p>
+              <p className="term-dim">✓ Plan Coverage Lookup</p>
+              <p className="term-dim">✓ Real-time Support</p>
+            </div>
+
+            <div className="terminal-nav-link">
+              <Link to="/" className="terminal-button">
+                cd ~/home
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Right Side - Enhanced Form */}
-        <div className="auth-form-section">
-          <div className="form-container">
-            <div className="form-header">
-              <h2 className="form-title">Create Your Account</h2>
-              <p className="form-subtitle">Start your journey to smarter customer service today</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="auth-form">
-              <div className="input-group">
-                <label className="input-label">
-                  <span className="label-icon">👤</span>
-                  <span className="label-text">Username</span>
-                </label>
-                <div className="input-wrapper">
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={handleUsernameChange}
-                    disabled={isLoading}
-                    placeholder="Choose a unique username"
-                    maxLength={20}
-                    className={`form-input ${fieldErrors.username ? 'error' : ''}`}
-                  />
-                  <div className="input-accent"></div>
+        {/* Right Side - Signup Form Bento */}
+        <div className="bento-cell-2x2 terminal-window">
+          <div className="terminal-header">
+            <span className="terminal-title">┌─ ACCOUNT CREATION ─┐</span>
+          </div>
+          <div className="terminal-body">
+            {success ? (
+              <div className="terminal-success-screen">
+                <div className="terminal-success-art">
+                  <pre className="term-green">
+                    {`
+    ✓ SUCCESS
+    
+  Account Created!
+`}
+                  </pre>
                 </div>
-                {fieldErrors.username && (
-                  <div className="input-error">
-                    <span className="error-icon">⚠️</span>
-                    <span>{fieldErrors.username}</span>
-                  </div>
-                )}
+                <div className="terminal-success">
+                  User account created successfully
+                </div>
+                <div className="terminal-prompt">
+                  <span className="term-dim">Redirecting to login...</span>
+                  <span className="terminal-cursor"></span>
+                </div>
               </div>
+            ) : (
+              <>
+                <div className="auth-session-header">
+                  <span className="term-green term-bold">$ ./useradd.sh --interactive</span>
+                  <span className="terminal-cursor"></span>
+                </div>
 
-              <div className="input-group">
-                <label className="input-label">
-                  <span className="label-icon">📧</span>
-                  <span className="label-text">Email Address</span>
-                </label>
-                <div className="input-wrapper">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    disabled={isLoading}
-                    placeholder="your.email@company.com"
-                    maxLength={100}
-                    className={`form-input ${fieldErrors.email ? 'error' : ''}`}
-                  />
-                  <div className="input-accent"></div>
-                </div>
-                {fieldErrors.email && (
-                  <div className="input-error">
-                    <span className="error-icon">⚠️</span>
-                    <span>{fieldErrors.email}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">
-                  <span className="label-icon">🔒</span>
-                  <span className="label-text">Password</span>
-                </label>
-                <div className="input-wrapper password-wrapper">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={handlePasswordChange}
-                    disabled={isLoading}
-                    placeholder="Create a strong password"
-                    maxLength={50}
-                    className={`form-input ${fieldErrors.password ? 'error' : ''}`}
-                  />
-                  <button
-                    type="button"
-                    className="password-visibility"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={isLoading}
-                  >
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
-                  </button>
-                  <div className="input-accent"></div>
-                </div>
-                {fieldErrors.password && (
-                  <div className="input-error">
-                    <span className="error-icon">⚠️</span>
-                    <span>{fieldErrors.password}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="input-group">
-                <label className="input-label">
-                  <span className="label-icon">🔒</span>
-                  <span className="label-text">Confirm Password</span>
-                </label>
-                <div className="input-wrapper password-wrapper">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={handleConfirmPasswordChange}
-                    disabled={isLoading}
-                    placeholder="Confirm your password"
-                    maxLength={50}
-                    className={`form-input ${fieldErrors.confirmPassword ? 'error' : ''}`}
-                  />
-                  <button
-                    type="button"
-                    className="password-visibility"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    disabled={isLoading}
-                  >
-                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                  </button>
-                  <div className="input-accent"></div>
-                </div>
-                {fieldErrors.confirmPassword && (
-                  <div className="input-error">
-                    <span className="error-icon">⚠️</span>
-                    <span>{fieldErrors.confirmPassword}</span>
-                  </div>
-                )}
-              </div>
-              
-              <button 
-                type="submit" 
-                className="submit-button"
-                disabled={isLoading}
-              >
-                <div className="button-content">
-                  {isLoading ? (
-                    <>
-                      <div className="button-spinner"></div>
-                      <span>Creating Your Account...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Create My Account</span>
-                      <span className="button-arrow">→</span>
-                    </>
-                  )}
-                </div>
-                <div className="button-shine"></div>
-              </button>
-              
-              {fieldErrors.general.length > 0 && (
-                <div className="general-errors">
-                  {fieldErrors.general.map((error, index) => (
-                    <div key={index} className="general-error">
-                      <span className="error-icon">⚠️</span>
-                      <span>{error}</span>
+                <form onSubmit={handleSubmit} className="terminal-auth-form">
+                  {/* Username Input */}
+                  <div className="terminal-input-wrapper">
+                    <label className="terminal-input-label">
+                      username
+                    </label>
+                    <div className="terminal-input-container">
+                      <span className="term-green">&gt; </span>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={handleUsernameChange}
+                        onFocus={() => setActiveField('username')}
+                        onBlur={() => setActiveField(null)}
+                        disabled={isLoading}
+                        placeholder="enter username"
+                        maxLength={20}
+                        className={`terminal-input ${fieldErrors.username ? 'error' : ''}`}
+                      />
+                      {activeField === 'username' && <span className="terminal-cursor"></span>}
                     </div>
-                  ))}
+                    {fieldErrors.username && (
+                      <div className="terminal-error">
+                        {fieldErrors.username}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Email Input */}
+                  <div className="terminal-input-wrapper">
+                    <label className="terminal-input-label">
+                      email
+                    </label>
+                    <div className="terminal-input-container">
+                      <span className="term-green">&gt; </span>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={handleEmailChange}
+                        onFocus={() => setActiveField('email')}
+                        onBlur={() => setActiveField(null)}
+                        disabled={isLoading}
+                        placeholder="user@domain.com"
+                        maxLength={100}
+                        className={`terminal-input ${fieldErrors.email ? 'error' : ''}`}
+                      />
+                      {activeField === 'email' && <span className="terminal-cursor"></span>}
+                    </div>
+                    {fieldErrors.email && (
+                      <div className="terminal-error">
+                        {fieldErrors.email}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Password Input */}
+                  <div className="terminal-input-wrapper">
+                    <label className="terminal-input-label">
+                      password
+                    </label>
+                    <div className="terminal-input-container">
+                      <span className="term-green">&gt; </span>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={handlePasswordChange}
+                        onFocus={() => setActiveField('password')}
+                        onBlur={() => setActiveField(null)}
+                        disabled={isLoading}
+                        placeholder="enter password"
+                        maxLength={50}
+                        className={`terminal-input ${fieldErrors.password ? 'error' : ''}`}
+                      />
+                      {activeField === 'password' && <span className="terminal-cursor"></span>}
+                    </div>
+                    <div className="password-toggle-wrapper">
+                      <button
+                        type="button"
+                        className="terminal-toggle-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                        disabled={isLoading}
+                      >
+                        {showPassword ? '[HIDE]' : '[SHOW]'}
+                      </button>
+                    </div>
+                    {fieldErrors.password && (
+                      <div className="terminal-error">
+                        {fieldErrors.password}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Confirm Password Input */}
+                  <div className="terminal-input-wrapper">
+                    <label className="terminal-input-label">
+                      confirm_password
+                    </label>
+                    <div className="terminal-input-container">
+                      <span className="term-green">&gt; </span>
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={handleConfirmPasswordChange}
+                        onFocus={() => setActiveField('confirmPassword')}
+                        onBlur={() => setActiveField(null)}
+                        disabled={isLoading}
+                        placeholder="confirm password"
+                        maxLength={50}
+                        className={`terminal-input ${fieldErrors.confirmPassword ? 'error' : ''}`}
+                      />
+                      {activeField === 'confirmPassword' && <span className="terminal-cursor"></span>}
+                    </div>
+                    <div className="password-toggle-wrapper">
+                      <button
+                        type="button"
+                        className="terminal-toggle-btn"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        disabled={isLoading}
+                      >
+                        {showConfirmPassword ? '[HIDE]' : '[SHOW]'}
+                      </button>
+                    </div>
+                    {fieldErrors.confirmPassword && (
+                      <div className="terminal-error">
+                        {fieldErrors.confirmPassword}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="terminal-submit-button"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <span className="terminal-spinner">
+                        <span className="term-green">[</span>
+                        <span className="spinner-char">|</span>
+                        <span className="term-green">]</span>
+                        <span> CREATING ACCOUNT...</span>
+                      </span>
+                    ) : (
+                      <span>
+                        <span className="term-green">&gt;</span> sudo useradd --execute
+                      </span>
+                    )}
+                  </button>
+
+                  <div className="terminal-divider">──────── OR ────────</div>
+                  <GoogleAuthButton
+                    onSuccess={() => navigate('/chatbot')}
+                    onError={(message) => setFieldErrors(prev => ({ ...prev, general: [message] }))}
+                  />
+
+                  {/* General Errors */}
+                  {fieldErrors.general.length > 0 && (
+                    <div className="terminal-errors-container">
+                      {fieldErrors.general.map((error, index) => (
+                        <div key={index} className="terminal-error">
+                          {error}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </form>
+
+                <div className="terminal-divider">
+                  ─────────────────────────────────
                 </div>
-              )}
-            </form>
-            
-            <div className="form-footer">
-              <p className="footer-text">
-                Already have an account? 
-                <Link to="/signin" className="auth-link">Sign In</Link>
-              </p>
-            </div>
+
+                {/* Alternative Actions */}
+                <div className="terminal-alt-actions">
+                  <div className="terminal-prompt">
+                    <span className="term-dim">Already have an account?</span>
+                    <Link to="/signin" className="term-green terminal-link">
+                      user login --signin
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Info Bento */}
+        <div className="bento-cell-4x1 terminal-window terminal-footer-info">
+          <div className="terminal-body terminal-footer-content">
+            <span className="term-dim">© 2024 CSR Denial Knowledge Bot</span>
+            <span className="term-dim">|</span>
+            <span className="term-dim">All rights reserved</span>
+            <span className="term-dim">|</span>
+            <span className="term-green">STATUS: OPERATIONAL</span>
           </div>
         </div>
       </div>
-
-      {/* Homepage Style Footer */}
-      <footer className="professional-footer">
-        <p>&copy; 2024 AI Assistant. All rights reserved.</p>
-      </footer>
     </div>
   );
 }

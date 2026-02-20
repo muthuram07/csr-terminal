@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { API_ENDPOINTS } from '../../config/api';
+import apiService from '../../services/apiService';
 import './ChatBot.css';
 
 function ChatBot() {
@@ -9,11 +9,19 @@ function ChatBot() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const initializedRef = useRef(false);
-  
+  const messageIdRef = useRef(0); // Unique ID counter for messages
+
   // Chat state
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [currentInput, setCurrentInput] = useState('');
+  const [recommendations, setRecommendations] = useState([]);
+  const [showRecommendations, setShowRecommendations] = useState(false);
+
+  // Generate unique message IDs to prevent duplicate key warnings
+  const generateMessageId = useCallback(() => {
+    return `msg-${Date.now()}-${++messageIdRef.current}`;
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,9 +30,9 @@ function ChatBot() {
   const addBotMessage = useCallback((text, type = 'text', options = null) => {
     // Clean response inline to avoid dependency issues
     const cleanText = typeof text === 'string' ? text.replace(/\*\*/g, '').replace(/\*/g, '') : text;
-    
+
     const message = {
-      id: Date.now(),
+      id: generateMessageId(),
       text: cleanText,
       sender: 'bot',
       timestamp: new Date(),
@@ -32,42 +40,52 @@ function ChatBot() {
       options
     };
     setMessages(prev => [...prev, message]);
-  }, []);
+  }, [generateMessageId]);
 
   // Initialize chat with welcome message
   useEffect(() => {
     // Only initialize once to prevent duplicates
     if (!initializedRef.current) {
       initializedRef.current = true;
-      
+
       // Add welcome messages as chat messages
       const welcomeMessage = {
-        id: Date.now(),
+        id: generateMessageId(),
         text: "👋 Hello! I'm your Smart CSR Knowledge Bot assistant. I can help you with denial codes and plan coverage queries.",
         sender: 'bot',
         timestamp: new Date(),
         type: 'text'
       };
-      
+
       const examplesMessage = {
-        id: Date.now() + 1,
+        id: generateMessageId(),
         text: "💡 Just type your question!\n\nFor example:\n\n🔹 \"What does denial code CO-45 mean?\"\n🔹 \"Is dental covered for member M12345?\"\n🔹 \"Why was my claim rejected with code 96?\"",
         sender: 'bot',
         timestamp: new Date(),
         type: 'text'
       };
-      
+
       setMessages([welcomeMessage, examplesMessage]);
     }
-  }, []);
+  }, [generateMessageId]);
   // Auto scroll to bottom
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    const onUnauthorized = async () => {
+      await logout();
+      navigate('/signin');
+    };
+
+    window.addEventListener('unauthorized', onUnauthorized);
+    return () => window.removeEventListener('unauthorized', onUnauthorized);
+  }, [logout, navigate]);
+
   const addUserMessage = (text) => {
     const message = {
-      id: Date.now(),
+      id: generateMessageId(),
       text,
       sender: 'user',
       timestamp: new Date()
@@ -75,27 +93,46 @@ function ChatBot() {
     setMessages(prev => [...prev, message]);
   };
 
-  const simulateTyping = (callback, delay = 1500) => {
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      callback();
-    }, delay);
-  };
-
-  const handleQuickReply = (reply) => {
-    addUserMessage(reply);
-    
-    simulateTyping(() => {
-      if (reply === 'Denial Code Resolution') {
-        addBotMessage("Perfect! I can help you with denial codes. Just tell me naturally, like:\n\n🔹 \"What does denial code D001 mean?\"\n🔹 \"Why was claim rejected with code 96?\"\n🔹 \"Explain error code 204\"\n\nWhat denial code would you like to know about?");
-      } else if (reply === 'Plan Coverage Query') {
-        addBotMessage("Great! I can help with plan coverage. Just ask naturally, like:\n\n🔹 \"Is dental covered for member M12345?\"\n🔹 \"What benefits does John Doe have?\"\n🔹 \"Does plan PPO123 include vision?\"\n\nWhat would you like to know about coverage?");
-      } else if (reply === 'Help') {
-        addBotMessage("I'm your intelligent CSR assistant! I can understand natural language questions about:\n\n🔍 **Denial Codes**: Ask about any denial code and get step-by-step resolution\n📋 **Plan Coverage**: Check member benefits and coverage details\n🔎 **Member Lookup**: Find member information\n\nJust type your question naturally - no forms needed! What would you like to know?");
+  /*
+  useEffect(() => {
+    const timeout = setTimeout(async () => {
+      const input = currentInput.trim();
+      if (!input || isTyping) {
+        setRecommendations([]);
+        setShowRecommendations(false);
+        return;
       }
-    });
-  };
+
+      try {
+        // Check if authenticated
+        if (!apiService.isAuthenticated()) {
+          setRecommendations([]);
+          return;
+        }
+
+        // Get recommendations using the new API service
+        const response = await apiService.post('/api/smart/recommendations', {
+          input,
+          limit: 5,
+          medicalContext: {
+            lastUserMessage: messages.filter(m => m.sender === 'user').slice(-1)[0]?.text || ''
+          }
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+          setRecommendations(data.suggestions || []);
+          setShowRecommendations(true);
+        }
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        setRecommendations([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [currentInput, isTyping, messages]);
+  */
 
 
 
@@ -123,6 +160,10 @@ function ChatBot() {
     // 3) If nested again inside a 'response' after parsing, unwrap
     if (payload && typeof payload === 'object' && payload.response) {
       payload = payload.response;
+    }
+    // Some responses wrap member details under payload.member.
+    if (payload && typeof payload === 'object' && payload.type === 'member_info' && payload.member) {
+      payload = { ...payload, ...payload.member };
     }
 
     // If backend returned a plain string, try to infer a denial explanation structure
@@ -206,17 +247,40 @@ function ChatBot() {
       }
     }
 
-    // Denial explanations
+    // Denial explanations — handle matches array from ML API
     if (
       payload?.type === 'denial_explanation' ||
       payload?.type === 'denial' ||
+      payload?.type === 'denial_lookup' ||
       payload?.denial_code ||
       payload?.explanation ||
       payload?.suggested_action ||
       payload?.description ||
-      payload?.reason
+      payload?.reason ||
+      payload?.matches
     ) {
       const originalCode = userQuery.match(/\b[A-Za-z]{1,3}-?\d{1,3}\b/)?.[0] || payload.denial_code || payload.code;
+
+      // Handle matches array from ML API (e.g. {matches: [{code, description, action, similarity}], type: "denial_explanation"})
+      if (Array.isArray(payload.matches) && payload.matches.length > 0) {
+        const bestMatch = payload.matches[0]; // highest similarity is first
+        const mapped = {
+          denial_code: originalCode || bestMatch.code,
+          description: bestMatch.description || bestMatch.explanation || bestMatch.meaning,
+          suggested_action: bestMatch.action || bestMatch.suggested_action || bestMatch.recommendation || payload.recommendation,
+        };
+
+        // If multiple matches, include them all for display
+        if (payload.matches.length > 1) {
+          mapped.all_matches = payload.matches;
+        }
+
+        return {
+          type: 'denial-result-structured',
+          data: { ...mapped, original_query: userQuery },
+        };
+      }
+
       const mapped = {
         denial_code: originalCode,
         description: payload.description || payload.explanation || payload.meaning || payload.reason,
@@ -249,6 +313,9 @@ function ChatBot() {
         end_date: payload.end_date ?? payload.endDate,
         status: payload.status,
       };
+      if (!data.coverage_answer && (payload.message || payload.suggestion)) {
+        return `${payload.message || 'Coverage details are unavailable.'}${payload.suggestion ? ` ${payload.suggestion}` : ''}`;
+      }
       return { type: 'plan-result-structured', data };
     }
 
@@ -258,17 +325,42 @@ function ChatBot() {
       (payload?.member_id && (payload?.member_name || payload?.status)) ||
       (payload?.memberId && (payload?.memberName || payload?.status))
     ) {
-      const data = {
-        ...payload,
-        member_id: payload.member_id ?? payload.memberId,
-        member_name: payload.member_name ?? payload.memberName,
+      if (payload?.error) {
+        return payload.error;
+      }
+      const member = payload.member ?? payload;
+      const planDetails = member.plan_details ?? member.planDetails ?? {};
+      return {
+        type: 'plan-result-structured',
+        data: {
+          coverage_answer: 'Member details found.',
+          member_id: member.member_id ?? member.memberId ?? 'N/A',
+          member_name: member.member_name ?? member.memberName ?? member.name ?? 'N/A',
+          status: member.status ?? 'N/A',
+          plan_id: member.plan_id ?? member.planId ?? 'N/A',
+          effective_date: member.effective_date ?? member.effectiveDate ?? 'N/A',
+          end_date: member.end_date ?? member.endDate ?? 'N/A',
+          plan_details: {
+            coverage_type: planDetails.coverage_type ?? planDetails.coverageType ?? 'N/A',
+            covered_services: planDetails.covered_services ?? planDetails.coveredServices ?? 'N/A',
+            copay: planDetails.copay ?? 'N/A',
+            notes: planDetails.notes,
+          },
+        },
       };
-      return { type: 'member-result-structured', data };
     }
 
     // Generated response/help/out of scope passthroughs
     if (payload.type === 'generated_response' && payload.response) {
       return payload.response;
+    }
+    if (payload.type === 'general_answer') {
+      const answer = payload.answer || 'How can I help you today?';
+      const suggestions = Array.isArray(payload.suggested_queries) ? payload.suggested_queries.slice(0, 3) : [];
+      if (suggestions.length === 0) {
+        return answer;
+      }
+      return `${answer}\n\nTry:\n${suggestions.map((s) => `- ${s}`).join('\n')}`;
     }
     if (payload.type === 'help_response' || payload.type === 'general_help') {
       return payload.message || payload.response || 'Here to help with denial codes and coverage questions!';
@@ -283,39 +375,37 @@ function ChatBot() {
   // NEW SMART NLP INPUT HANDLER
   const handleInputSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (currentInput.trim()) {
       const userQuery = currentInput.trim();
       addUserMessage(userQuery);
       setCurrentInput('');
+      setShowRecommendations(false);
+      setRecommendations([]);
 
       // Process query using Smart Query API through Spring Boot backend
       setIsTyping(true);
-      
+
       try {
-        // Get auth token from localStorage
-        const token = localStorage.getItem('authToken');
-        
-        if (!token) {
+        // Check authentication
+        if (!apiService.isAuthenticated()) {
           addBotMessage("Please log in to use the smart query feature.");
           setIsTyping(false);
           return;
         }
 
-        const response = await fetch(API_ENDPOINTS.SMART_QUERY, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            query: userQuery
-          }),
+        // Make the smart query request using the API service
+        const response = await apiService.post('/api/smart/query', {
+          query: userQuery,
+          timezoneOffsetMinutes: -new Date().getTimezoneOffset(),
+          medicalContext: {
+            recentMessages: messages.slice(-4).map(m => ({ sender: m.sender, text: typeof m.text === 'string' ? m.text : '' }))
+          }
         });
 
         const result = await response.json();
 
-        if (response.ok) {
+        if (response.ok && result?.success !== false) {
           const normalized = normalizeResponse(result, userQuery);
           if (normalized) {
             addBotMessage(normalized);
@@ -323,7 +413,7 @@ function ChatBot() {
             addBotMessage(result.response || 'I processed your query successfully.');
           }
         } else {
-          const errorMessage = result.error || "I'm having trouble connecting to my smart processing system. Please try again in a moment.";
+          const errorMessage = result.error || result.message || "I'm having trouble connecting to my smart processing system. Please try again in a moment.";
           addBotMessage(`❌ ${errorMessage}`);
         }
       } catch (error) {
@@ -351,7 +441,7 @@ function ChatBot() {
             <p>Your AI Assistant for Instant Answers</p>
           </div>
         </div>
-        
+
         <div className="header-actions">
           <button onClick={() => navigate('/')} className="header-btn">
             ← Back to Home
@@ -367,13 +457,12 @@ function ChatBot() {
         {/* Chat Messages */}
         <div className="chat-messages">
           {messages.map((message) => (
-            <ChatMessage 
-              key={message.id} 
-              message={message} 
-              onQuickReply={handleQuickReply}
+            <ChatMessage
+              key={message.id}
+              message={message}
             />
           ))}
-          
+
           {/* Typing Indicator */}
           {isTyping && (
             <div className="chat-message assistant">
@@ -400,7 +489,12 @@ function ChatBot() {
           <div className="input-wrapper">
             <textarea
               value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
+              onChange={(e) => {
+                setCurrentInput(e.target.value);
+                if (!e.target.value.trim()) {
+                  setShowRecommendations(false);
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -420,9 +514,26 @@ function ChatBot() {
                 e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
               }}
             />
+            {showRecommendations && recommendations.length > 0 && (
+              <div className="recommendations-dropdown">
+                {recommendations.map((suggestion, idx) => (
+                  <button
+                    key={`${suggestion}-${idx}`}
+                    type="button"
+                    className="recommendation-item"
+                    onClick={() => {
+                      setCurrentInput(suggestion);
+                      setShowRecommendations(false);
+                    }}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="send-button"
             disabled={!currentInput.trim() || isTyping}
           >
@@ -442,7 +553,7 @@ function ChatBot() {
 }
 
 // Chat Message Component
-function ChatMessage({ message, onQuickReply }) {
+function ChatMessage({ message }) {
 
   if (message.sender === 'user') {
     return (
@@ -490,7 +601,7 @@ function ChatMessage({ message, onQuickReply }) {
                   <span className="info-label">Plan</span>
                   <span className="info-value">
                     {message.text.data.plan_id || 'N/A'}
-                    {message.text.data.plan_details?.coverage_type && message.text.data.plan_details.coverage_type !== 'N/A' ? 
+                    {message.text.data.plan_details?.coverage_type && message.text.data.plan_details.coverage_type !== 'N/A' ?
                       ` (${message.text.data.plan_details.coverage_type})` : ''}
                   </span>
                 </div>
@@ -518,11 +629,11 @@ function ChatMessage({ message, onQuickReply }) {
             </div>
 
             {message.text.data.warning && (
-              <div className="warning-section" style={{ 
-                background: '#fef3cd', 
-                border: '1px solid #fbbf24', 
-                borderRadius: '8px', 
-                padding: '1rem', 
+              <div className="warning-section" style={{
+                background: '#fef3cd',
+                border: '1px solid #fbbf24',
+                borderRadius: '8px',
+                padding: '1rem',
                 marginTop: '1rem',
                 display: 'flex',
                 alignItems: 'center',
@@ -557,22 +668,22 @@ function ChatMessage({ message, onQuickReply }) {
               <div className="response-section">
                 <div className="section-title">📋 Description</div>
                 <div className="section-content">
-                  {message.text.data.description || 
-                   message.text.data.explanation || 
-                   message.text.data.meaning ||
-                   message.text.data.details || 
-                   'No description available'}
+                  {message.text.data.description ||
+                    message.text.data.explanation ||
+                    message.text.data.meaning ||
+                    message.text.data.details ||
+                    'No description available'}
                 </div>
               </div>
 
               <div className="response-section">
                 <div className="section-title">✅ Suggested Action</div>
                 <div className="section-content">
-                  {message.text.data.suggested_action || 
-                      message.text.data.action || 
-                      message.text.data.recommendation ||
-                      message.text.data.next_steps ||
-                      'Check payer fee schedule or submit an appeal with documentation'}
+                  {message.text.data.suggested_action ||
+                    message.text.data.action ||
+                    message.text.data.recommendation ||
+                    message.text.data.next_steps ||
+                    'Check payer fee schedule or submit an appeal with documentation'}
                 </div>
               </div>
             </div>
@@ -685,8 +796,8 @@ function ChatMessage({ message, onQuickReply }) {
               <span>ℹ️</span>
               <h3 className="response-title">Information</h3>
             </div>
-            <div style={{ 
-              color: '#64748b', 
+            <div style={{
+              color: '#64748b',
               textAlign: 'center',
               padding: '1rem',
               fontStyle: 'italic'
@@ -703,34 +814,6 @@ function ChatMessage({ message, onQuickReply }) {
                 {typeof message.text === 'object' ? JSON.stringify(message.text, null, 2) : String(message.text)}
               </div>
             )}
-          </div>
-        )}
-
-        {message.options?.quickReplies && (
-          <div className="quick-replies" style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '0.5rem',
-            marginTop: '1rem'
-          }}>
-            {message.options.quickReplies.map((reply, index) => (
-              <button
-                key={index}
-                className="quick-reply-btn"
-                onClick={() => onQuickReply(reply)}
-                style={{
-                  background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
-                  border: '1px solid #cbd5e1',
-                  borderRadius: '8px',
-                  padding: '0.5rem 1rem',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {reply}
-              </button>
-            ))}
           </div>
         )}
       </div>

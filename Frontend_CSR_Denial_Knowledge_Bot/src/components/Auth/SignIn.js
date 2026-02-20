@@ -1,33 +1,35 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
+import '../../styles/terminal.css';
+import './TerminalAuth.css';
+import GoogleAuthButton from './GoogleAuthButton';
 
 function SignIn() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState({
-    username: '',
+    email: '',
     password: '',
     general: []
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const [activeField, setActiveField] = useState(null);
+  const { loginWithFirebase } = useAuth();
   const navigate = useNavigate();
 
   const validateForm = () => {
     const newFieldErrors = {
-      username: '',
+      email: '',
       password: '',
       general: []
     };
 
-    if (!username.trim()) {
-      newFieldErrors.username = 'Username is required';
-    } else if (username.length < 3) {
-      newFieldErrors.username = 'Username must be at least 3 characters';
-    } else if (username.length > 20) {
-      newFieldErrors.username = 'Username must not exceed 20 characters';
+    if (!email.trim()) {
+      newFieldErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newFieldErrors.email = 'Enter a valid email';
     }
 
     if (!password) {
@@ -39,12 +41,12 @@ function SignIn() {
     }
 
     setFieldErrors(newFieldErrors);
-    return !newFieldErrors.username && !newFieldErrors.password;
+    return !newFieldErrors.email && !newFieldErrors.password;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFieldErrors({ username: '', password: '', general: [] });
+    setFieldErrors({ email: '', password: '', general: [] });
     setIsLoading(true);
 
     if (!validateForm()) {
@@ -53,12 +55,12 @@ function SignIn() {
     }
     
     try {
-      const result = await login(username.trim(), password);
+      const result = await loginWithFirebase(email.trim(), password);
       
       if (result.success) {
         navigate('/chatbot');
       } else {
-        const newFieldErrors = { username: '', password: '', general: [] };
+        const newFieldErrors = { email: '', password: '', general: [] };
         
         if (result.message) {
           const errorMessages = result.message.split('; ');
@@ -66,42 +68,40 @@ function SignIn() {
           errorMessages.forEach(message => {
             const trimmedMessage = message.trim();
             
-            if (trimmedMessage === 'This username is not registered. Please sign up first.') {
-              newFieldErrors.username = 'Username not found. Please check or sign up.';
-            } else if (trimmedMessage === 'Incorrect password. Please try again.') {
-              newFieldErrors.password = 'Incorrect password. Please try again.';
-            } else if (trimmedMessage === 'Username is required') {
-              newFieldErrors.username = 'Username is required';
+            if (trimmedMessage.toLowerCase().includes('email') || trimmedMessage.toLowerCase().includes('user')) {
+              newFieldErrors.email = 'Email not found';
+            } else if (trimmedMessage.toLowerCase().includes('password')) {
+              newFieldErrors.password = 'Incorrect password';
+            } else if (trimmedMessage === 'Email is required') {
+              newFieldErrors.email = 'Email is required';
             } else if (trimmedMessage === 'Password is required') {
               newFieldErrors.password = 'Password is required';
-            } else if (trimmedMessage === 'This account is inactive. Please contact support.') {
-              newFieldErrors.username = 'Account inactive. Contact support.';
             } else if (trimmedMessage.includes('Network error')) {
-              newFieldErrors.general.push('Connection failed. Check your internet.');
+              newFieldErrors.general.push('Connection failed');
             } else {
               newFieldErrors.general.push(trimmedMessage);
             }
           });
         } else {
-          newFieldErrors.general = ['Login failed. Please try again.'];
+          newFieldErrors.general = ['Login failed'];
         }
         setFieldErrors(newFieldErrors);
       }
     } catch (error) {
       setFieldErrors({
-        username: '', password: '',
-        general: ['Unexpected error. Please try again.']
+        email: '', password: '',
+        general: ['Unexpected error']
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleUsernameChange = (e) => {
-    const value = e.target.value.substring(0, 20);
-    setUsername(value);
-    if (fieldErrors.username) {
-      setFieldErrors(prev => ({ ...prev, username: '' }));
+  const handleEmailChange = (e) => {
+    const value = e.target.value.substring(0, 100);
+    setEmail(value);
+    if (fieldErrors.email) {
+      setFieldErrors(prev => ({ ...prev, email: '' }));
     }
   };
 
@@ -114,151 +114,219 @@ function SignIn() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-layout">
-        {/* Left Side - Clean MNC Branding */}
-        <div className="auth-branding">
-          <div className="branding-content">
-            <div className="brand-logo">
-              <div className="brand-icon-wrapper">
-                <span className="brand-icon">🤖</span>
-                <div className="icon-glow"></div>
+    <div className="terminal-auth-page">
+      {/* Terminal Header Bar */}
+      <div className="terminal-top-bar">
+        <div className="terminal-top-bar-content">
+          <span className="term-green term-bold">CSR_DENIAL_KNOWLEDGE_BOT</span>
+          <span className="term-dim">v1.0.0</span>
+        </div>
+      </div>
+
+      <div className="bento-grid auth-bento-grid">
+        {/* Left Side - System Info Bento */}
+        <div className="bento-cell-2x2 terminal-window">
+          <div className="terminal-header">
+            <span className="terminal-title">┌─ SYSTEM INFO ─┐</span>
+          </div>
+          <div className="terminal-body">
+            <div className="terminal-ascii-art">
+              <pre className="term-green">
+{`
+   ██████╗███████╗██████╗ 
+  ██╔════╝██╔════╝██╔══██╗
+  ██║     ███████╗██████╔╝
+  ██║     ╚════██║██╔══██╗
+  ╚██████╗███████║██║  ██║
+   ╚═════╝╚══════╝╚═╝  ╚═╝
+`}
+              </pre>
+            </div>
+            
+            <div className="system-info-lines">
+              <div className="terminal-prompt">
+                <span className="term-green">SYSTEM:</span>
+                <span className="term-white">CSR Denial Knowledge Bot</span>
               </div>
-              <h1 className="brand-name">CSR Denial Knowledge Bot</h1>
-              <p className="brand-tagline">Intelligent Customer Support Assistant</p>
+              <div className="terminal-prompt">
+                <span className="term-green">VERSION:</span>
+                <span className="term-white">1.0.0</span>
+              </div>
+              <div className="terminal-prompt">
+                <span className="term-green">STATUS:</span>
+                <span className="term-matrix-green">ONLINE</span>
+              </div>
+              <div className="terminal-prompt">
+                <span className="term-green">AUTH:</span>
+                <span className="term-yellow">REQUIRED</span>
+              </div>
             </div>
-            
-            <div className="auth-hero">
-              <h2 className="auth-hero-title">Welcome Back</h2>
-              <p className="auth-hero-description">
-                Experience the future of customer service excellence with AI-powered insights 
-                that transform how your team handles complex inquiries and delivers exceptional support.
-              </p>
+
+            <div className="terminal-divider">
+              ─────────────────────────────────
             </div>
-            
-            <div className="auth-navigation">
-              <Link to="/" className="home-button">
-                <span className="home-icon">🏠</span>
-                <span>Back to Home</span>
+
+            <div className="terminal-help-text">
+              <p className="term-dim">AI-Powered CSR Assistant</p>
+              <p className="term-dim">Intelligent Denial Code Analysis</p>
+              <p className="term-dim">Real-time Plan Coverage Lookup</p>
+            </div>
+
+            <div className="terminal-nav-link">
+              <Link to="/" className="terminal-button">
+                cd ~/home
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Right Side - Enhanced Form */}
-        <div className="auth-form-section">
-          <div className="form-container">
-            <div className="form-header">
-              <h2 className="form-title">Sign In to Your Account</h2>
-              <p className="form-subtitle">Continue your journey to exceptional customer service</p>
+        {/* Right Side - Login Form Bento */}
+        <div className="bento-cell-2x2 terminal-window">
+          <div className="terminal-header">
+            <span className="terminal-title">┌─ USER AUTHENTICATION ─┐</span>
+          </div>
+          <div className="terminal-body">
+            <div className="auth-session-header">
+              <span className="term-green term-bold">$ ./login.sh</span>
+              <span className="terminal-cursor"></span>
             </div>
 
-            <form onSubmit={handleSubmit} className="auth-form">
-              <div className="input-group">
-                <label className="input-label">
-                  <span className="label-icon">👤</span>
-                  <span className="label-text">Username</span>
+            <form onSubmit={handleSubmit} className="terminal-auth-form">
+              {/* Username Input */}
+              <div className="terminal-input-wrapper">
+                <label className="terminal-input-label">
+                  email
                 </label>
-                <div className="input-wrapper">
+                <div className="terminal-input-container">
+                  <span className="term-green">&gt; </span>
                   <input
-                    type="text"
-                    value={username}
-                    onChange={handleUsernameChange}
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    onFocus={() => setActiveField('email')}
+                    onBlur={() => setActiveField(null)}
                     disabled={isLoading}
-                    placeholder="Enter your username"
-                    maxLength={20}
-                    className={`form-input ${fieldErrors.username ? 'error' : ''}`}
+                    placeholder="enter email"
+                    maxLength={100}
+                    className={`terminal-input ${fieldErrors.email ? 'error' : ''}`}
                   />
-                  <div className="input-accent"></div>
+                  {activeField === 'email' && <span className="terminal-cursor"></span>}
                 </div>
-                {fieldErrors.username && (
-                  <div className="input-error">
-                    <span className="error-icon">⚠️</span>
-                    <span>{fieldErrors.username}</span>
+                {fieldErrors.email && (
+                  <div className="terminal-error">
+                    {fieldErrors.email}
                   </div>
                 )}
               </div>
-              
-              <div className="input-group">
-                <label className="input-label">
-                  <span className="label-icon">🔒</span>
-                  <span className="label-text">Password</span>
+
+              {/* Password Input */}
+              <div className="terminal-input-wrapper">
+                <label className="terminal-input-label">
+                  password
                 </label>
-                <div className="input-wrapper password-wrapper">
+                <div className="terminal-input-container">
+                  <span className="term-green">&gt; </span>
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={handlePasswordChange}
+                    onFocus={() => setActiveField('password')}
+                    onBlur={() => setActiveField(null)}
                     disabled={isLoading}
-                    placeholder="Enter your password"
+                    placeholder="enter password"
                     maxLength={50}
-                    className={`form-input ${fieldErrors.password ? 'error' : ''}`}
+                    className={`terminal-input ${fieldErrors.password ? 'error' : ''}`}
                   />
+                  {activeField === 'password' && <span className="terminal-cursor"></span>}
+                </div>
+                <div className="password-toggle-wrapper">
                   <button
                     type="button"
-                    className="password-visibility"
+                    className="terminal-toggle-btn"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
                   >
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                    {showPassword ? '[HIDE]' : '[SHOW]'}
                   </button>
-                  <div className="input-accent"></div>
                 </div>
                 {fieldErrors.password && (
-                  <div className="input-error">
-                    <span className="error-icon">⚠️</span>
-                    <span>{fieldErrors.password}</span>
+                  <div className="terminal-error">
+                    {fieldErrors.password}
                   </div>
                 )}
               </div>
-              
+
+              {/* Submit Button */}
               <button 
                 type="submit" 
-                className="submit-button"
+                className="terminal-submit-button"
                 disabled={isLoading}
               >
-                <div className="button-content">
-                  {isLoading ? (
-                    <>
-                      <div className="button-spinner"></div>
-                      <span>Signing You In...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Sign In   </span>
-                      <span className="button-arrow">→</span>
-                    </>
-                  )}
-                </div>
-                <div className="button-shine"></div>
+                {isLoading ? (
+                  <span className="terminal-spinner">
+                    <span className="term-green">[</span>
+                    <span className="spinner-char">|</span>
+                    <span className="term-green">]</span>
+                    <span> AUTHENTICATING...</span>
+                  </span>
+                ) : (
+                  <span>
+                    <span className="term-green">&gt;</span> user login --execute
+                  </span>
+                )}
               </button>
-              
+
+              <div className="terminal-divider">──────── OR ────────</div>
+              <GoogleAuthButton
+                onSuccess={() => navigate('/chatbot')}
+                onError={(message) => setFieldErrors(prev => ({ ...prev, general: [message] }))}
+              />
+
+              {/* General Errors */}
               {fieldErrors.general.length > 0 && (
-                <div className="general-errors">
+                <div className="terminal-errors-container">
                   {fieldErrors.general.map((error, index) => (
-                    <div key={index} className="general-error">
-                      <span className="error-icon">⚠️</span>
-                      <span>{error}</span>
+                    <div key={index} className="terminal-error">
+                      {error}
                     </div>
                   ))}
                 </div>
               )}
             </form>
-            
-            <div className="form-footer">
-              <p className="footer-text">
-                Don't have an account? 
-                <Link to="/signup" className="auth-link">Create your free account</Link>
-              </p>
+
+            <div className="terminal-divider">
+              ─────────────────────────────────
+            </div>
+
+            {/* Alternative Actions */}
+            <div className="terminal-alt-actions">
+              <div className="terminal-prompt">
+                <span className="term-dim">New user?</span>
+                <Link to="/signup" className="term-green terminal-link">
+                  sudo useradd --create
+                </Link>
+              </div>
+              <div className="terminal-prompt">
+                <span className="term-dim">Forgot password?</span>
+                <span className="term-green terminal-link">
+                  sudo recovery --email
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Homepage Style Footer */}
-      <footer className="professional-footer">
-        <p>&copy; 2024 AI Assistant. All rights reserved.</p>
-      </footer>
+        {/* Bottom Info Bento */}
+        <div className="bento-cell-4x1 terminal-window terminal-footer-info">
+          <div className="terminal-body terminal-footer-content">
+            <span className="term-dim">© 2024 CSR Denial Knowledge Bot</span>
+            <span className="term-dim">|</span>
+            <span className="term-dim">All rights reserved</span>
+            <span className="term-dim">|</span>
+            <span className="term-green">STATUS: OPERATIONAL</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

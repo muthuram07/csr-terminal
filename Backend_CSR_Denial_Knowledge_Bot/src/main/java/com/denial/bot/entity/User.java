@@ -12,7 +12,8 @@ import lombok.*;
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "idx_users_username", columnList = "username"),
-        @Index(name = "idx_users_email", columnList = "email")
+        @Index(name = "idx_users_email", columnList = "email"),
+        @Index(name = "idx_users_firebase_uid", columnList = "firebase_uid")
 })
 @Data
 @NoArgsConstructor
@@ -38,6 +39,9 @@ public class User {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(name = "firebase_uid", unique = true, length = 128)
+    private String firebaseUid;
 
     /**
      * Explicit convenience constructor used in services/controllers:

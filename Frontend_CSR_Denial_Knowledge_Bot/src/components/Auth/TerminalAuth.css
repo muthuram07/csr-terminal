@@ -1,0 +1,339 @@
+/* ===== TERMINAL AUTHENTICATION STYLES ===== */
+
+.terminal-auth-page {
+    min-height: 100vh;
+    background: var(--term-black);
+    padding: 0;
+}
+
+.terminal-top-bar {
+    background: var(--term-black);
+    border-bottom: var(--border-width) var(--border-style) var(--term-matrix-green);
+    padding: var(--space-sm) var(--space-lg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.terminal-top-bar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+}
+
+.auth-bento-grid {
+    min-height: calc(100vh - 60px);
+    align-items: start;
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+}
+
+/* Terminal ASCII Art */
+.terminal-ascii-art {
+    margin-bottom: var(--space-lg);
+}
+
+.terminal-ascii-art pre {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    line-height: 1.2;
+    margin: 0;
+    letter-spacing: -0.05em;
+}
+
+/* System Info Lines */
+.system-info-lines {
+    margin-bottom: var(--space-lg);
+}
+
+.system-info-lines .terminal-prompt {
+    margin-bottom: var(--space-xs);
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.terminal-divider {
+    color: var(--term-matrix-green);
+    font-family: var(--font-mono);
+    margin: var(--space-lg) 0;
+    opacity: 0.3;
+}
+
+.terminal-help-text {
+    margin-bottom: var(--space-lg);
+}
+
+.terminal-help-text p {
+    margin-bottom: var(--space-xs);
+    font-size: 0.8rem;
+}
+
+.terminal-nav-link {
+    margin-top: var(--space-xl);
+}
+
+/* Auth Session Header */
+.auth-session-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--border-width) var(--border-style) var(--term-matrix-green);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+/* Terminal Auth Form */
+.terminal-auth-form {
+    margin-bottom: var(--space-lg);
+}
+
+.terminal-input-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    position: relative;
+}
+
+.terminal-input-container .terminal-input {
+    flex: 1;
+    border-bottom-width: 1px;
+}
+
+.password-toggle-wrapper {
+    margin-top: var(--space-xs);
+    text-align: right;
+}
+
+.terminal-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--ansi-bright-black);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: var(--space-xs);
+    transition: color 0.2s ease;
+}
+
+.terminal-toggle-btn:hover {
+    color: var(--term-matrix-green);
+}
+
+.terminal-toggle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Terminal Submit Button */
+.terminal-submit-button {
+    width: 100%;
+    background: var(--term-black);
+    color: var(--term-matrix-green);
+    border: var(--border-width) var(--border-style) var(--term-matrix-green);
+    padding: var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-top: var(--space-lg);
+    text-align: left;
+}
+
+.terminal-submit-button:hover:not(:disabled) {
+    background: var(--term-matrix-green);
+    color: var(--term-black);
+    box-shadow: 0 0 15px var(--term-matrix-green);
+}
+
+.terminal-submit-button:active:not(:disabled) {
+    transform: scale(0.99);
+}
+
+.terminal-submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    border-color: var(--ansi-bright-black);
+    color: var(--ansi-bright-black);
+}
+
+/* Terminal Spinner */
+.terminal-spinner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+@keyframes spinner-rotate {
+    0% {
+        content: '|';
+    }
+
+    25% {
+        content: '/';
+    }
+
+    50% {
+        content: '─';
+    }
+
+    75% {
+        content: '\\';
+    }
+
+    100% {
+        content: '|';
+    }
+}
+
+.spinner-char {
+    display: inline-block;
+    animation: spinner-rotate 0.6s linear infinite;
+    color: var(--term-matrix-green);
+}
+
+.spinner-char::before {
+    content: '|';
+    animation: spinner-rotate 0.6s linear infinite;
+}
+
+/* Terminal Errors Container */
+.terminal-errors-container {
+    margin-top: var(--space-md);
+    padding: var(--space-sm);
+    border: var(--border-width) var(--border-style) var(--ansi-red);
+    background: rgba(170, 0, 0, 0.1);
+}
+
+/* Terminal Alternative Actions */
+.terminal-alt-actions {
+    margin-top: var(--space-md);
+}
+
+.terminal-alt-actions .terminal-prompt {
+    margin-bottom: var(--space-sm);
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.terminal-link {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
+
+.terminal-link:hover {
+    text-shadow: 0 0 8px var(--term-matrix-green);
+    border-bottom-color: var(--term-matrix-green);
+}
+
+/* Terminal Footer Info */
+.terminal-footer-info {
+    border-top: var(--border-width) var(--border-style) var(--term-matrix-green);
+}
+
+.terminal-footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    font-size: 0.75rem;
+}
+
+/* Google Auth Button (Terminal Style) */
+.terminal-google-auth {
+    width: 100%;
+    background: var(--term-black);
+    color: var(--term-white);
+    border: var(--border-width) var(--border-style) var(--ansi-blue);
+    padding: var(--space-md);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-top: var(--space-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.terminal-google-auth::before {
+    content: '>';
+    color: var(--ansi-blue);
+    font-weight: 700;
+}
+
+.terminal-google-auth:hover {
+    background: var(--ansi-blue);
+    color: var(--term-black);
+    box-shadow: 0 0 15px var(--ansi-blue);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .auth-bento-grid {
+        padding-top: var(--space-lg);
+        padding-bottom: var(--space-lg);
+    }
+
+    .terminal-ascii-art pre {
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .terminal-top-bar-content {
+        flex-direction: column;
+        gap: var(--space-xs);
+        text-align: center;
+    }
+
+    .terminal-ascii-art {
+        display: none;
+    }
+
+    .auth-bento-grid {
+        padding-top: var(--space-md);
+        padding-bottom: var(--space-md);
+    }
+}
+
+/* Terminal Success Screen */
+.terminal-success-screen {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+}
+
+.terminal-success-art {
+    margin-bottom: var(--space-xl);
+}
+
+.terminal-success-art pre {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    line-height: 1.4;
+    margin: 0;
+    animation: successPulse 2s ease-in-out infinite;
+}
+
+@keyframes successPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        text-shadow: 0 0 5px var(--term-matrix-green);
+    }
+
+    50% {
+        opacity: 0.8;
+        text-shadow: 0 0 15px var(--term-matrix-green);
+    }
+}

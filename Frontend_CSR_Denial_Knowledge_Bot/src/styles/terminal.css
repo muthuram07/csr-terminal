@@ -1,0 +1,507 @@
+/* ===== TERMINAL THEME - DESIGN SYSTEM ===== */
+/* Pure Linux Terminal Aesthetic with Bento Grid Layout */
+
+/* Import Monospace Fonts */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+/* ===== CSS VARIABLES - TERMINAL DESIGN TOKENS ===== */
+:root {
+  /* Terminal Colors - ANSI Palette */
+  --term-black: #000000;
+  --term-white: #FFFFFF;
+  --term-matrix-green: #00FF00;
+  --term-green: #00AA00;
+  --term-dark-green: #008800;
+  
+  /* ANSI 16-Color Palette */
+  --ansi-black: #000000;
+  --ansi-red: #AA0000;
+  --ansi-green: #00AA00;
+  --ansi-yellow: #AA5500;
+  --ansi-blue: #0000AA;
+  --ansi-magenta: #AA00AA;
+  --ansi-cyan: #00AAAA;
+  --ansi-white: #AAAAAA;
+  
+  /* ANSI Bright Colors */
+  --ansi-bright-black: #555555;
+  --ansi-bright-red: #FF5555;
+  --ansi-bright-green: #55FF55;
+  --ansi-bright-yellow: #FFFF55;
+  --ansi-bright-blue: #5555FF;
+  --ansi-bright-magenta: #FF55FF;
+  --ansi-bright-cyan: #55FFFF;
+  --ansi-bright-white: #FFFFFF;
+  
+  /* Typography */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'IBM Plex Mono', 'Courier New', monospace;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border */
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: var(--term-matrix-green);
+  
+  /* Effects */
+  --cursor-blink-speed: 1s;
+  --scanline-opacity: 0.05;
+  --crt-flicker-speed: 0.15s;
+}
+
+/* ===== RESET & BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-mono);
+  background: var(--term-black);
+  color: var(--term-white);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  /* CRT Effect Base */
+  text-shadow: 0 0 1px rgba(0, 255, 0, 0.3);
+}
+
+/* ===== SCANLINE OVERLAY ===== */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--scanline-opacity);
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(10px); }
+}
+
+/* ===== CRT FLICKER EFFECT ===== */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 255, 0, 0.02);
+  pointer-events: none;
+  z-index: 9998;
+  animation: flicker var(--crt-flicker-speed) infinite alternate;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.96; }
+}
+
+/* ===== BLINKING CURSOR ===== */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.2em;
+  background: var(--term-matrix-green);
+  animation: blink var(--cursor-blink-speed) infinite;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+}
+
+/* ===== ASCII BOX DRAWING UTILITIES ===== */
+.ascii-box {
+  border: var(--border-width) var(--border-style) var(--border-color);
+  position: relative;
+}
+
+/* ASCII Border Characters */
+.ascii-border-top::before {
+  content: '─';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  color: var(--term-matrix-green);
+  font-family: var(--font-mono);
+}
+
+/* ===== TERMINAL WINDOW COMPONENT ===== */
+.terminal-window {
+  background: var(--term-black);
+  border: var(--border-width) var(--border-style) var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.terminal-header {
+  background: var(--term-black);
+  border-bottom: var(--border-width) var(--border-style) var(--border-color);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-mono);
+  color: var(--term-matrix-green);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.terminal-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.terminal-controls {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: 0.75rem;
+}
+
+.terminal-body {
+  padding: var(--space-md);
+  color: var(--term-white);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* ===== BENTO GRID SYSTEM ===== */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Bento Cell Spans */
+.bento-cell-1x1 {
+  grid-column: span 3;
+  grid-row: span 1;
+}
+
+.bento-cell-2x1 {
+  grid-column: span 6;
+  grid-row: span 1;
+}
+
+.bento-cell-2x2 {
+  grid-column: span 6;
+  grid-row: span 2;
+}
+
+.bento-cell-3x1 {
+  grid-column: span 9;
+  grid-row: span 1;
+}
+
+.bento-cell-4x1 {
+  grid-column: span 12;
+  grid-row: span 1;
+}
+
+.bento-cell-1x2 {
+  grid-column: span 3;
+  grid-row: span 2;
+}
+
+/* ===== TERMINAL BUTTON STYLES ===== */
+.terminal-button {
+  background: var(--term-black);
+  color: var(--term-matrix-green);
+  border: var(--border-width) var(--border-style) var(--border-color);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  position: relative;
+}
+
+.terminal-button::before {
+  content: '> ';
+  color: var(--term-matrix-green);
+}
+
+.terminal-button:hover {
+  background: var(--term-matrix-green);
+  color: var(--term-black);
+  box-shadow: 0 0 10px var(--term-matrix-green);
+}
+
+.terminal-button:active {
+  transform: scale(0.98);
+}
+
+.terminal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: var(--ansi-bright-black);
+  color: var(--ansi-bright-black);
+}
+
+/* ===== TERMINAL INPUT STYLES ===== */
+.terminal-input-wrapper {
+  position: relative;
+  margin-bottom: var(--space-md);
+}
+
+.terminal-input-label {
+  display: block;
+  color: var(--term-matrix-green);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  margin-bottom: var(--space-xs);
+  font-weight: 600;
+}
+
+.terminal-input-label::before {
+  content: '$ ';
+  color: var(--term-matrix-green);
+}
+
+.terminal-input {
+  width: 100%;
+  background: var(--term-black);
+  color: var(--term-white);
+  border: none;
+  border-bottom: var(--border-width) var(--border-style) var(--term-matrix-green);
+  padding: var(--space-sm) 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.terminal-input:focus {
+  border-bottom-color: var(--term-matrix-green);
+  box-shadow: 0 1px 0 0 var(--term-matrix-green);
+}
+
+.terminal-input::placeholder {
+  color: var(--ansi-bright-black);
+  opacity: 0.6;
+}
+
+.terminal-input.error {
+  border-bottom-color: var(--ansi-red);
+}
+
+/* Active input with blinking cursor */
+.terminal-input:focus + .terminal-cursor {
+  display: inline-block;
+}
+
+/* ===== TERMINAL PROMPT STYLE ===== */
+.terminal-prompt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-mono);
+  color: var(--term-matrix-green);
+  margin-bottom: var(--space-sm);
+}
+
+.terminal-prompt::before {
+  content: '>';
+  color: var(--term-matrix-green);
+  font-weight: 700;
+}
+
+/* ===== ERROR MESSAGES ===== */
+.terminal-error {
+  color: var(--ansi-red);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin-top: var(--space-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.terminal-error::before {
+  content: '[ERROR]';
+  font-weight: 700;
+}
+
+.terminal-success {
+  color: var(--term-matrix-green);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin-top: var(--space-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.terminal-success::before {
+  content: '[OK]';
+  font-weight: 700;
+}
+
+/* ===== TERMINAL SELECTION/HOVER STATES ===== */
+.terminal-selectable {
+  transition: all 0.1s ease;
+  cursor: pointer;
+}
+
+.terminal-selectable:hover {
+  background: var(--term-matrix-green);
+  color: var(--term-black);
+}
+
+/* ===== TERMINAL TEXT UTILITIES ===== */
+.term-green {
+  color: var(--term-matrix-green);
+}
+
+.term-white {
+  color: var(--term-white);
+}
+
+.term-red {
+  color: var(--ansi-red);
+}
+
+.term-yellow {
+  color: var(--ansi-yellow);
+}
+
+.term-cyan {
+  color: var(--ansi-cyan);
+}
+
+.term-bold {
+  font-weight: 700;
+}
+
+.term-dim {
+  opacity: 0.6;
+}
+
+/* ===== RESPONSIVE BENTO GRID ===== */
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .bento-cell-1x1,
+  .bento-cell-2x1,
+  .bento-cell-1x2 {
+    grid-column: span 6;
+  }
+  
+  .bento-cell-2x2,
+  .bento-cell-3x1,
+  .bento-cell-4x1 {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+  }
+  
+  .bento-cell-1x1,
+  .bento-cell-2x1,
+  .bento-cell-2x2,
+  .bento-cell-3x1,
+  .bento-cell-4x1,
+  .bento-cell-1x2 {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+/* ===== LOADING SPINNER (Terminal Style) ===== */
+@keyframes terminal-spin {
+  0% { content: '|'; }
+  25% { content: '/'; }
+  50% { content: '─'; }
+  75% { content: '\\'; }
+  100% { content: '|'; }
+}
+
+.terminal-spinner::after {
+  content: '|';
+  animation: terminal-spin 0.8s linear infinite;
+  color: var(--term-matrix-green);
+  font-family: var(--font-mono);
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--term-black);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--term-matrix-green);
+  border: 1px solid var(--term-black);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ansi-bright-green);
+}
+
+/* ===== LINK STYLES ===== */
+a {
+  color: var(--term-matrix-green);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  border-bottom-color: var(--term-matrix-green);
+  text-shadow: 0 0 5px var(--term-matrix-green);
+}
+
+/* ===== SELECTION ===== */
+::selection {
+  background: var(--term-matrix-green);
+  color: var(--term-black);
+}
+
+::-moz-selection {
+  background: var(--term-matrix-green);
+  color: var(--term-black);
+}

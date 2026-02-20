@@ -39,6 +39,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional containing user if found
      */
     Optional<User> findByEmailAndActive(String email, boolean active);
+
+    /**
+     * Find user by firebase uid
+     * @param firebaseUid firebase uid
+     * @return Optional containing user if found
+     */
+    Optional<User> findByFirebaseUid(String firebaseUid);
     
     /**
      * Check if username exists
