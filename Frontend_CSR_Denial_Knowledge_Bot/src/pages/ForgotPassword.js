@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { auth, isFirebaseConfigured } from '../config/firebase';
 import '../styles/terminal.css';
 import './ForgotPassword.css';
 
@@ -38,6 +38,10 @@ function ForgotPassword() {
         }
 
         try {
+            if (!isFirebaseConfigured || !auth) {
+                throw new Error('Firebase password reset is not configured for this local environment.');
+            }
+
             await sendPasswordResetEmail(auth, email.trim());
             setSuccess(true);
             setEmail('');

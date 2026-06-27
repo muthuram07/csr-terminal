@@ -1,0 +1,12 @@
+2026-06-27 14:00:56,163 INFO Loading CSV datasets
+2026-06-27 14:00:58,822 INFO Model loaded: C:\Users\muthu\Downloads\csr-terminal\csr-terminal\AI_Model_CSR_Denial_Knowledge_Bot\models\ml_model.pkl
+2026-06-27 14:00:58,894 INFO Starting Flask API on port 5004
+ * Serving Flask app 'enhanced_api'
+ * Debug mode: off
+2026-06-27 14:00:58,913 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5004
+ * Running on http://192.168.1.5:5004
+2026-06-27 14:00:58,913 INFO [33mPress CTRL+C to quit[0m
+2026-06-27 14:01:46,334 INFO 127.0.0.1 - - [27/Jun/2026 14:01:46] "GET /health HTTP/1.1" 200 -
+2026-06-27 14:01:47,174 INFO 127.0.0.1 - - [27/Jun/2026 14:01:47] "GET /health HTTP/1.1" 200 -

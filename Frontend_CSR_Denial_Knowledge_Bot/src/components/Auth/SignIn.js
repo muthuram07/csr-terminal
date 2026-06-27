@@ -6,30 +6,30 @@ import './TerminalAuth.css';
 import GoogleAuthButton from './GoogleAuthButton';
 
 function SignIn() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState({
-    email: '',
+    username: '',
     password: '',
     general: []
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeField, setActiveField] = useState(null);
-  const { loginWithFirebase } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const validateForm = () => {
     const newFieldErrors = {
-      email: '',
+      username: '',
       password: '',
       general: []
     };
 
-    if (!email.trim()) {
-      newFieldErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      newFieldErrors.email = 'Enter a valid email';
+    if (!username.trim()) {
+      newFieldErrors.username = 'Username is required';
+    } else if (username.trim().length < 3) {
+      newFieldErrors.username = 'Username must be at least 3 characters';
     }
 
     if (!password) {
@@ -41,12 +41,12 @@ function SignIn() {
     }
 
     setFieldErrors(newFieldErrors);
-    return !newFieldErrors.email && !newFieldErrors.password;
+    return !newFieldErrors.username && !newFieldErrors.password;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFieldErrors({ email: '', password: '', general: [] });
+    setFieldErrors({ username: '', password: '', general: [] });
     setIsLoading(true);
 
     if (!validateForm()) {
@@ -55,12 +55,12 @@ function SignIn() {
     }
     
     try {
-      const result = await loginWithFirebase(email.trim(), password);
+      const result = await login(username.trim(), password);
       
       if (result.success) {
         navigate('/chatbot');
       } else {
-        const newFieldErrors = { email: '', password: '', general: [] };
+        const newFieldErrors = { username: '', password: '', general: [] };
         
         if (result.message) {
           const errorMessages = result.message.split('; ');
@@ -68,12 +68,12 @@ function SignIn() {
           errorMessages.forEach(message => {
             const trimmedMessage = message.trim();
             
-            if (trimmedMessage.toLowerCase().includes('email') || trimmedMessage.toLowerCase().includes('user')) {
-              newFieldErrors.email = 'Email not found';
+            if (trimmedMessage.toLowerCase().includes('username') || trimmedMessage.toLowerCase().includes('user')) {
+              newFieldErrors.username = 'Username not found';
             } else if (trimmedMessage.toLowerCase().includes('password')) {
               newFieldErrors.password = 'Incorrect password';
-            } else if (trimmedMessage === 'Email is required') {
-              newFieldErrors.email = 'Email is required';
+            } else if (trimmedMessage === 'Username is required') {
+              newFieldErrors.username = 'Username is required';
             } else if (trimmedMessage === 'Password is required') {
               newFieldErrors.password = 'Password is required';
             } else if (trimmedMessage.includes('Network error')) {
@@ -89,7 +89,7 @@ function SignIn() {
       }
     } catch (error) {
       setFieldErrors({
-        email: '', password: '',
+        username: '', password: '',
         general: ['Unexpected error']
       });
     } finally {
@@ -97,11 +97,11 @@ function SignIn() {
     }
   };
 
-  const handleEmailChange = (e) => {
+  const handleUsernameChange = (e) => {
     const value = e.target.value.substring(0, 100);
-    setEmail(value);
-    if (fieldErrors.email) {
-      setFieldErrors(prev => ({ ...prev, email: '' }));
+    setUsername(value);
+    if (fieldErrors.username) {
+      setFieldErrors(prev => ({ ...prev, username: '' }));
     }
   };
 
@@ -195,26 +195,26 @@ function SignIn() {
               {/* Username Input */}
               <div className="terminal-input-wrapper">
                 <label className="terminal-input-label">
-                  email
+                  username
                 </label>
                 <div className="terminal-input-container">
                   <span className="term-green">&gt; </span>
                   <input
-                    type="email"
-                    value={email}
-                    onChange={handleEmailChange}
-                    onFocus={() => setActiveField('email')}
+                    type="text"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    onFocus={() => setActiveField('username')}
                     onBlur={() => setActiveField(null)}
                     disabled={isLoading}
-                    placeholder="enter email"
+                    placeholder="enter username"
                     maxLength={100}
-                    className={`terminal-input ${fieldErrors.email ? 'error' : ''}`}
+                    className={`terminal-input ${fieldErrors.username ? 'error' : ''}`}
                   />
-                  {activeField === 'email' && <span className="terminal-cursor"></span>}
+                  {activeField === 'username' && <span className="terminal-cursor"></span>}
                 </div>
-                {fieldErrors.email && (
+                {fieldErrors.username && (
                   <div className="terminal-error">
-                    {fieldErrors.email}
+                    {fieldErrors.username}
                   </div>
                 )}
               </div>

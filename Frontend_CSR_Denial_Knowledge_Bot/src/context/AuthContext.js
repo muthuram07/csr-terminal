@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { auth, googleProvider } from '../config/firebase';
+import { auth, googleProvider, isFirebaseConfigured } from '../config/firebase';
 import { BASE_URL } from '../config/api';
 import apiService from '../services/apiService';
 
@@ -38,6 +38,21 @@ export const AuthProvider = ({ children }) => {
 
   // Firebase Auth State Listener - prevents flickering
   useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      const storedToken = typeof window !== 'undefined' ? window.sessionStorage.getItem('authToken') : null;
+      const storedUser = typeof window !== 'undefined' ? window.sessionStorage.getItem('user') : null;
+      const storedMethod = typeof window !== 'undefined' ? window.sessionStorage.getItem('authMethod') : null;
+
+      if (storedToken && storedUser && storedMethod === 'backend') {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
+
+      setAuthMethod('backend');
+      setLoading(false);
+      return undefined;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // User is signed in with Firebase
@@ -87,6 +102,11 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
+      if (!isFirebaseConfigured || !auth || !googleProvider) {
+        setLoading(false);
+        return { success: false, message: 'Firebase is not configured for this local environment.' };
+      }
+
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
@@ -127,6 +147,10 @@ export const AuthProvider = ({ children }) => {
   // Firebase Password Reset
   const resetPassword = async (email) => {
     try {
+      if (!isFirebaseConfigured || !auth) {
+        return { success: false, message: 'Firebase password reset is not configured for this local environment.' };
+      }
+
       await sendPasswordResetEmail(auth, email);
       return { success: true, message: 'Password reset email sent' };
     } catch (error) {
@@ -178,6 +202,11 @@ export const AuthProvider = ({ children }) => {
   const registerWithFirebase = async (email, password, displayName) => {
     setLoading(true);
     try {
+      if (!isFirebaseConfigured || !auth) {
+        setLoading(false);
+        return { success: false, message: 'Firebase registration is not configured for this local environment.' };
+      }
+
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
       // Optionally update display name
@@ -256,6 +285,11 @@ export const AuthProvider = ({ children }) => {
   const loginWithFirebase = async (email, password) => {
     setLoading(true);
     try {
+      if (!isFirebaseConfigured || !auth) {
+        setLoading(false);
+        return { success: false, message: 'Firebase login is not configured for this local environment.' };
+      }
+
       await signInWithEmailAndPassword(auth, email, password);
       setLoading(false);
       return { success: true, message: 'Login successful' };
@@ -288,7 +322,9 @@ export const AuthProvider = ({ children }) => {
     try {
       if (authMethod === 'firebase') {
         // Firebase logout
-        await signOut(auth);
+        if (auth) {
+          await signOut(auth);
+        }
       } else if (token) {
         // Backend API logout
         await apiService.post('/api/auth/logout', {});
@@ -307,7 +343,7 @@ export const AuthProvider = ({ children }) => {
   // Function to make authenticated API calls
   const apiCall = async (endpoint, options = {}) => {
     let currentToken = token;
-    if (authMethod === 'firebase' && auth.currentUser) {
+    if (authMethod === 'firebase' && auth?.currentUser) {
       currentToken = await auth.currentUser.getIdToken();
       if (currentToken !== token) {
         setToken(currentToken);

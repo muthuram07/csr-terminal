@@ -18,7 +18,7 @@ function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [activeField, setActiveField] = useState(null);
   const [success, setSuccess] = useState(false);
-  const { registerWithFirebase } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -84,7 +84,7 @@ function SignUp() {
     }
 
     try {
-      const result = await registerWithFirebase(email.trim(), password, username.trim());
+      const result = await register(username.trim(), email.trim(), password);
 
       if (result.success) {
         setSuccess(true);

@@ -61,6 +61,24 @@ public class SmartQueryService {
     @Value("${smart.llm.api.key:}")
     private String llmApiKey;
 
+    @Value("${smart.llm.model:meta/llama-3.1-8b-instruct}")
+    private String llmModel;
+
+    @Value("${smart.llm.temperature:0.2}")
+    private double llmTemperature;
+
+    @Value("${smart.llm.top-p:0.95}")
+    private double llmTopP;
+
+    @Value("${smart.llm.max-tokens:250}")
+    private int llmMaxTokens;
+
+    @Value("${smart.llm.reasoning-budget:0}")
+    private int llmReasoningBudget;
+
+    @Value("${smart.llm.enable-thinking:false}")
+    private boolean llmEnableThinking;
+
     @Value("${smart.recommendation.use-llm:false}")
     private boolean useLlmForSuggestions;
 
@@ -290,6 +308,10 @@ public class SmartQueryService {
 
             Set<String> merged = new LinkedHashSet<>(mlSuggestions);
 
+            if (useLlmForSuggestions && hasLlmConfig()) {
+                merged.addAll(generateLlmSuggestions(normalizedInput, medicalContext, safeLimit * 2));
+            }
+
             // Fallback to knowledge base if needed
             if (merged.isEmpty()) {
                 merged.addAll(retrieveFromMedicalKnowledgeBase(normalizedInput, medicalContext, safeLimit * 2));
@@ -363,18 +385,49 @@ public class SmartQueryService {
         return score;
     }
 
+    private boolean hasLlmConfig() {
+        return llmApiUrl != null && !llmApiUrl.isBlank()
+                && llmApiKey != null && !llmApiKey.isBlank();
+    }
+
     private List<String> generateLlmSuggestions(String input, Map<String, Object> medicalContext, int limit) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(llmApiKey);
 
+            String prompt = """
+                    Generate short healthcare claim denial query suggestions.
+                    Return only a JSON array of strings, no markdown.
+                    Input prefix: %s
+                    Context: %s
+                    Limit: %d
+                    """.formatted(
+                    input == null ? "" : input,
+                    medicalContext == null ? Map.of() : medicalContext,
+                    limit);
+
             Map<String, Object> body = new HashMap<>();
-            body.put("input", input);
-            body.put("context", medicalContext == null ? Map.of() : medicalContext);
-            body.put("limit", limit);
-            body.put("domain", "healthcare-claims");
-            body.put("safety", "return clinically safe and non-diagnostic query suggestions only");
+            body.put("model", llmModel);
+            body.put("temperature", llmTemperature);
+            body.put("top_p", llmTopP);
+            body.put("max_tokens", llmMaxTokens);
+            body.put("stream", false);
+            body.put("messages", List.of(
+                    Map.of("role", "system", "content",
+                            "You help generate safe, non-diagnostic query suggestions for healthcare claims operations."),
+                    Map.of("role", "user", "content", prompt)));
+            if (llmEnableThinking || llmReasoningBudget > 0) {
+                Map<String, Object> chatTemplateKwargs = new HashMap<>();
+                chatTemplateKwargs.put("enable_thinking", llmEnableThinking);
+
+                Map<String, Object> extraBody = new HashMap<>();
+                extraBody.put("chat_template_kwargs", chatTemplateKwargs);
+                if (llmReasoningBudget > 0) {
+                    extraBody.put("reasoning_budget", llmReasoningBudget);
+                }
+                body.put("extra_body", extraBody);
+            }
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
             ResponseEntity<Map> response = restTemplate.exchange(llmApiUrl, HttpMethod.POST, request, Map.class);
@@ -382,21 +435,46 @@ public class SmartQueryService {
                 return List.of();
             }
 
-            Object suggestions = response.getBody().get("suggestions");
-            if (suggestions instanceof List<?> list) {
-                List<String> cleaned = new ArrayList<>();
-                for (Object o : list) {
-                    if (o != null)
-                        cleaned.add(String.valueOf(o));
+            Object choices = response.getBody().get("choices");
+            if (choices instanceof List<?> choiceList && !choiceList.isEmpty()
+                    && choiceList.get(0) instanceof Map<?, ?> firstChoice) {
+                Object message = firstChoice.get("message");
+                if (message instanceof Map<?, ?> messageMap) {
+                    Object content = messageMap.get("content");
+                    return parseSuggestionContent(String.valueOf(content), limit);
                 }
-                return cleaned;
             }
+
             return List.of();
         } catch (Exception ex) {
             logger.warn("LLM suggestion call failed, falling back to retrieval-only recommendations: {}",
                     ex.getMessage());
             return List.of();
         }
+    }
+
+    private List<String> parseSuggestionContent(String content, int limit) {
+        if (content == null || content.isBlank()) {
+            return List.of();
+        }
+
+        String normalized = content.trim()
+                .replaceAll("^```(?:json)?", "")
+                .replaceAll("```$", "")
+                .trim();
+
+        if (normalized.startsWith("[") && normalized.endsWith("]")) {
+            normalized = normalized.substring(1, normalized.length() - 1);
+        }
+
+        return List.of(normalized.split("\\r?\\n|,(?=\\s*\\\")"))
+                .stream()
+                .map(item -> item.replaceAll("^[\\s\\d.\\-\\[\\]\"]+", "")
+                        .replaceAll("[\\s\\]\"]+$", "")
+                        .trim())
+                .filter(item -> !item.isBlank())
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 
     /**

@@ -14,20 +14,33 @@ const firebaseConfig = {
     appId: process.env.REACT_APP_FIREBASE_APP_ID || ""
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const requiredFirebaseValues = [
+    firebaseConfig.apiKey,
+    firebaseConfig.authDomain,
+    firebaseConfig.projectId,
+    firebaseConfig.appId
+];
+
+export const isFirebaseConfigured = requiredFirebaseValues.every(Boolean);
+
+// Initialize Firebase only when local environment values are present.
+const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
 
 // Initialize Firebase Authentication
-export const auth = getAuth(app);
-setPersistence(auth, browserSessionPersistence).catch((error) => {
-    console.error('Failed to set Firebase session persistence:', error);
-});
+export const auth = app ? getAuth(app) : null;
+if (auth) {
+    setPersistence(auth, browserSessionPersistence).catch((error) => {
+        console.error('Failed to set Firebase session persistence:', error);
+    });
+}
 
 // Configure Google Auth Provider
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-    prompt: 'select_account'
-});
+export const googleProvider = isFirebaseConfigured ? new GoogleAuthProvider() : null;
+if (googleProvider) {
+    googleProvider.setCustomParameters({
+        prompt: 'select_account'
+    });
+}
 
 export default app;
 

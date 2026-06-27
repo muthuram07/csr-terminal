@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../../config/firebase';
+import { auth, googleProvider, isFirebaseConfigured } from '../../config/firebase';
 import '../../styles/terminal.css';
 
 /**
@@ -17,6 +17,10 @@ function GoogleAuthButton({ onSuccess, onError, className = '' }) {
         setError('');
 
         try {
+            if (!isFirebaseConfigured || !auth || !googleProvider) {
+                throw new Error('Firebase is not configured for this local environment.');
+            }
+
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
 
@@ -66,8 +70,9 @@ function GoogleAuthButton({ onSuccess, onError, className = '' }) {
         <div className={`google-auth-container ${className}`}>
             <button
                 onClick={handleGoogleAuth}
-                disabled={isLoading}
+                disabled={isLoading || !isFirebaseConfigured}
                 className="terminal-google-auth"
+                title={!isFirebaseConfigured ? 'Firebase is not configured for this local environment.' : undefined}
             >
                 {isLoading ? (
                     <span className="terminal-spinner">
