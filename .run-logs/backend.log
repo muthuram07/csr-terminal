@@ -1303,3 +1303,631 @@ Hibernate:
 2026-06-27T14:01:46.392+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
 2026-06-27T14:01:46.393+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{success=true}]
 2026-06-27T14:01:46.412+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:30:31.666+05:30 DEBUG 22800 --- [nio-8081-exec-4] o.s.web.servlet.DispatcherServlet        : POST "/api/auth/register", parameters={}
+2026-06-27T14:30:31.666+05:30 DEBUG 22800 --- [nio-8081-exec-4] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.AuthController#register(RegisterRequest, BindingResult)
+2026-06-27T14:30:31.725+05:30 DEBUG 22800 --- [nio-8081-exec-4] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [RegisterRequest{username='Mutthu', email='[PROTECTED]', password='[PROTECTED]'}]
+2026-06-27T14:30:31.802+05:30  INFO 22800 --- [nio-8081-exec-4] c.denial.bot.controller.AuthController   : 📝 Registration attempt for username: Mutthu
+2026-06-27T14:30:31.807+05:30 DEBUG 22800 --- [nio-8081-exec-4] org.hibernate.SQL                        : 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.username=? 
+    limit
+        ?
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.username=? 
+    limit
+        ?
+2026-06-27T14:30:31.812+05:30 DEBUG 22800 --- [nio-8081-exec-4] org.hibernate.SQL                        : 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    limit
+        ?
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    limit
+        ?
+2026-06-27T14:30:31.932+05:30 DEBUG 22800 --- [nio-8081-exec-4] org.hibernate.SQL                        : 
+    insert 
+    into
+        users
+        (active, email, firebase_uid, password, role, username) 
+    values
+        (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        users
+        (active, email, firebase_uid, password, role, username) 
+    values
+        (?, ?, ?, ?, ?, ?)
+2026-06-27T14:30:31.932+05:30  INFO 22800 --- [nio-8081-exec-4] com.denial.bot.service.AuthService       : New user registered: Mutthu (muthu@gmail.com)
+2026-06-27T14:30:31.932+05:30  INFO 22800 --- [nio-8081-exec-4] c.denial.bot.controller.AuthController   : ✅ Registration successful for: Mutthu
+2026-06-27T14:30:31.952+05:30 DEBUG 22800 --- [nio-8081-exec-4] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:30:31.954+05:30 DEBUG 22800 --- [nio-8081-exec-4] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [RegisterResponse{success=true, message='Registration successful! You can now login.', username='Mutt (truncated)...]
+2026-06-27T14:30:31.954+05:30 DEBUG 22800 --- [nio-8081-exec-4] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:30:51.292+05:30 DEBUG 22800 --- [nio-8081-exec-6] o.s.web.servlet.DispatcherServlet        : POST "/api/auth/login", parameters={}
+2026-06-27T14:30:51.292+05:30 DEBUG 22800 --- [nio-8081-exec-6] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.AuthController#login(LoginRequest, BindingResult)
+2026-06-27T14:30:51.297+05:30 DEBUG 22800 --- [nio-8081-exec-6] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [LoginRequest{username='Mutthu', password='[PROTECTED]'}]
+2026-06-27T14:30:51.301+05:30  INFO 22800 --- [nio-8081-exec-6] c.denial.bot.controller.AuthController   : 🔐 Login attempt for username: Mutthu
+2026-06-27T14:30:51.307+05:30 DEBUG 22800 --- [nio-8081-exec-6] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=? 
+        and u1_0.active=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=? 
+        and u1_0.active=?
+2026-06-27T14:30:51.437+05:30  INFO 22800 --- [nio-8081-exec-6] com.denial.bot.service.AuthService       : User authenticated: Mutthu
+2026-06-27T14:30:51.472+05:30  INFO 22800 --- [nio-8081-exec-6] c.denial.bot.controller.AuthController   : ✅ Login successful for: Mutthu
+2026-06-27T14:30:51.479+05:30 DEBUG 22800 --- [nio-8081-exec-6] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:30:51.479+05:30 DEBUG 22800 --- [nio-8081-exec-6] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [LoginResponse{token='[PROTECTED]', username='Mutthu', message='Login successful', success=true}]
+2026-06-27T14:30:51.485+05:30 DEBUG 22800 --- [nio-8081-exec-6] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:30:56.340+05:30 DEBUG 22800 --- [nio-8081-exec-8] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:30:56.343+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:30:56.344+05:30 DEBUG 22800 --- [nio-8081-exec-8] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:30:56.348+05:30 DEBUG 22800 --- [nio-8081-exec-8] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=Hi, timezoneOffsetMinutes=330, medicalContext={recentMessages=[{sender=bot, text=👋 Hello! I' (truncated)...]
+2026-06-27T14:30:56.350+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:30:56.350+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:30:56.353+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Writing [{query=Hi, medicalContext={recentMessages=[{sender=bot, text=👋 Hello! I'm your Smart CSR Knowledge Bot assistant. I can help you with denial codes and plan coverage queries.}, {sender=bot, text=💡 Just type your question!
+
+For example:
+
+🔹 "What does denial code CO-45 mean?"
+🔹 "Is dental covered for member M12345?"
+🔹 "Why was my claim rejected with code 96?"}]}}] as "application/json"
+2026-06-27T14:30:56.364+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:30:56.364+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:30:56.365+05:30  INFO 22800 --- [nio-8081-exec-8] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 15ms
+2026-06-27T14:30:56.370+05:30 DEBUG 22800 --- [nio-8081-exec-8] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:30:56.388+05:30  INFO 22800 --- [nio-8081-exec-8] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:30:56.388+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:30:56.388+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=5.52, response={answer=Hi. I can help with denial codes, member look (truncated)...]
+2026-06-27T14:30:56.388+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:31:02.661+05:30 DEBUG 22800 --- [nio-8081-exec-9] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:31:02.665+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:31:02.665+05:30 DEBUG 22800 --- [nio-8081-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:31:02.666+05:30 DEBUG 22800 --- [nio-8081-exec-9] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=Explain denial code CO-45, timezoneOffsetMinutes=330, medicalContext={recentMessages=[{sender (truncated)...]
+2026-06-27T14:31:02.668+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:31:02.668+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:31:02.668+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Writing [{query=Explain denial code CO-45, medicalContext={recentMessages=[{sender=bot, text=👋 Hello! I'm your Smart CSR Knowledge Bot assistant. I can help you with denial codes and plan coverage queries.}, {sender=bot, text=💡 Just type your question!
+
+For example:
+
+🔹 "What does denial code CO-45 mean?"
+🔹 "Is dental covered for member M12345?"
+🔹 "Why was my claim rejected with code 96?"}, {sender=user, text=Hi}, {sender=bot, text=Hi. I can help with denial codes, member lookup, and plan coverage checks.
+
+Try:
+- Explain denial code CO-45
+- Show member M12345 details
+- Is dental covered for member M12345?}]}}] as "application/json"
+2026-06-27T14:31:02.675+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:31:02.676+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:31:02.677+05:30  INFO 22800 --- [nio-8081-exec-9] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 9ms
+2026-06-27T14:31:02.680+05:30 DEBUG 22800 --- [nio-8081-exec-9] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:31:02.685+05:30  INFO 22800 --- [nio-8081-exec-9] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:31:02.692+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:31:02.692+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=4.62, response={confidence=0.99, matches=[{action=Check payer fee sc (truncated)...]
+2026-06-27T14:31:02.694+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:31:13.744+05:30 DEBUG 22800 --- [nio-8081-exec-2] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:31:13.748+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:31:13.748+05:30 DEBUG 22800 --- [nio-8081-exec-2] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:31:13.750+05:30 DEBUG 22800 --- [nio-8081-exec-2] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=Is dental covered for member M12345?, timezoneOffsetMinutes=330, medicalContext={recentMessag (truncated)...]
+2026-06-27T14:31:13.750+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:31:13.750+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:31:13.752+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.client.RestTemplate              : Writing [{query=Is dental covered for member M12345?, medicalContext={recentMessages=[{sender=user, text=Hi}, {sender=bot, text=Hi. I can help with denial codes, member lookup, and plan coverage checks.
+
+Try:
+- Explain denial code CO-45
+- Show member M12345 details
+- Is dental covered for member M12345?}, {sender=user, text=Explain denial code CO-45}, {sender=bot, text=}]}}] as "application/json"
+2026-06-27T14:31:13.764+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:31:13.764+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:31:13.764+05:30  INFO 22800 --- [nio-8081-exec-2] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 14ms
+2026-06-27T14:31:13.768+05:30 DEBUG 22800 --- [nio-8081-exec-2] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:31:13.774+05:30  INFO 22800 --- [nio-8081-exec-2] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:31:13.774+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:31:13.774+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=9.33, response={confidence=0.95, coverage_answer=No, dental is not c (truncated)...]
+2026-06-27T14:31:13.776+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:31:23.147+05:30 DEBUG 22800 --- [nio-8081-exec-3] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:31:23.149+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:31:23.150+05:30 DEBUG 22800 --- [nio-8081-exec-3] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:31:23.152+05:30 DEBUG 22800 --- [nio-8081-exec-3] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=Is dental covered for member M12349?, timezoneOffsetMinutes=330, medicalContext={recentMessag (truncated)...]
+2026-06-27T14:31:23.152+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:31:23.153+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:31:23.153+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.web.client.RestTemplate              : Writing [{query=Is dental covered for member M12349?, medicalContext={recentMessages=[{sender=user, text=Explain denial code CO-45}, {sender=bot, text=}, {sender=user, text=Is dental covered for member M12345?}, {sender=bot, text=}]}}] as "application/json"
+2026-06-27T14:31:23.160+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:31:23.160+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:31:23.160+05:30  INFO 22800 --- [nio-8081-exec-3] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 8ms
+2026-06-27T14:31:23.164+05:30 DEBUG 22800 --- [nio-8081-exec-3] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:31:23.171+05:30  INFO 22800 --- [nio-8081-exec-3] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:31:23.172+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:31:23.172+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=5.08, response={confidence=0.95, message=Plan coverage information r (truncated)...]
+2026-06-27T14:31:23.174+05:30 DEBUG 22800 --- [nio-8081-exec-3] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:31:55.836+05:30 DEBUG 22800 --- [nio-8081-exec-5] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:31:55.841+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:31:55.841+05:30 DEBUG 22800 --- [nio-8081-exec-5] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:31:55.842+05:30 DEBUG 22800 --- [nio-8081-exec-5] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=Give some ID's like that, timezoneOffsetMinutes=330, medicalContext={recentMessages=[{sender= (truncated)...]
+2026-06-27T14:31:55.844+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:31:55.844+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:31:55.844+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.web.client.RestTemplate              : Writing [{query=Give some ID's like that, medicalContext={recentMessages=[{sender=user, text=Is dental covered for member M12345?}, {sender=bot, text=}, {sender=user, text=Is dental covered for member M12349?}, {sender=bot, text=Plan coverage information requested Please include a valid member ID like M12345}]}}] as "application/json"
+2026-06-27T14:31:55.849+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:31:55.849+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:31:55.849+05:30  INFO 22800 --- [nio-8081-exec-5] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 5ms
+2026-06-27T14:31:55.852+05:30 DEBUG 22800 --- [nio-8081-exec-5] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:31:55.857+05:30  INFO 22800 --- [nio-8081-exec-5] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:31:55.858+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:31:55.858+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=1.42, response={answer=Ask about denial codes, member details, or co (truncated)...]
+2026-06-27T14:31:55.859+05:30 DEBUG 22800 --- [nio-8081-exec-5] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:32:10.724+05:30 DEBUG 22800 --- [nio-8081-exec-7] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:32:10.727+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:32:10.728+05:30 DEBUG 22800 --- [nio-8081-exec-7] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:32:10.730+05:30 DEBUG 22800 --- [nio-8081-exec-7] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=what are all the denial code present, timezoneOffsetMinutes=330, medicalContext={recentMessag (truncated)...]
+2026-06-27T14:32:10.731+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:32:10.731+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:32:10.731+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.web.client.RestTemplate              : Writing [{query=what are all the denial code present, medicalContext={recentMessages=[{sender=user, text=Is dental covered for member M12349?}, {sender=bot, text=Plan coverage information requested Please include a valid member ID like M12345}, {sender=user, text=Give some ID's like that}, {sender=bot, text=Ask about denial codes, member details, or coverage for a member ID (e.g., M12345).
+
+Try:
+- Explain denial code CO-45
+- Show member M12345 details
+- Is dental covered for member M12345?}]}}] as "application/json"
+2026-06-27T14:32:10.735+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:32:10.735+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:32:10.738+05:30  INFO 22800 --- [nio-8081-exec-7] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 8ms
+2026-06-27T14:32:10.739+05:30 DEBUG 22800 --- [nio-8081-exec-7] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:32:10.747+05:30  INFO 22800 --- [nio-8081-exec-7] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:32:10.748+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:32:10.748+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=1.68, response={confidence=0.9, matches=[{action=Verify member's eli (truncated)...]
+2026-06-27T14:32:10.749+05:30 DEBUG 22800 --- [nio-8081-exec-7] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:32:18.193+05:30 DEBUG 22800 --- [nio-8081-exec-8] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:32:18.195+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:32:18.196+05:30 DEBUG 22800 --- [nio-8081-exec-8] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:32:18.198+05:30 DEBUG 22800 --- [nio-8081-exec-8] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=hello, timezoneOffsetMinutes=330, medicalContext={recentMessages=[{sender=user, text=Give som (truncated)...]
+2026-06-27T14:32:18.199+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:32:18.199+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:32:18.199+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Writing [{query=hello, medicalContext={recentMessages=[{sender=user, text=Give some ID's like that}, {sender=bot, text=Ask about denial codes, member details, or coverage for a member ID (e.g., M12345).
+
+Try:
+- Explain denial code CO-45
+- Show member M12345 details
+- Is dental covered for member M12345?}, {sender=user, text=what are all the denial code present}, {sender=bot, text=}]}}] as "application/json"
+2026-06-27T14:32:18.204+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:32:18.204+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:32:18.205+05:30  INFO 22800 --- [nio-8081-exec-8] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 7ms
+2026-06-27T14:32:18.207+05:30 DEBUG 22800 --- [nio-8081-exec-8] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:32:18.215+05:30  INFO 22800 --- [nio-8081-exec-8] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:32:18.216+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:32:18.216+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=0.96, response={answer=Hello. Ask me a denial code or a member cover (truncated)...]
+2026-06-27T14:32:18.217+05:30 DEBUG 22800 --- [nio-8081-exec-8] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:32:32.313+05:30 DEBUG 22800 --- [nio-8081-exec-9] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:32:32.316+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:32:32.316+05:30 DEBUG 22800 --- [nio-8081-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:32:32.316+05:30 DEBUG 22800 --- [nio-8081-exec-9] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=I dont know, timezoneOffsetMinutes=330, medicalContext={recentMessages=[{sender=user, text=wh (truncated)...]
+2026-06-27T14:32:32.318+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:32:32.318+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:32:32.318+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Writing [{query=I dont know, medicalContext={recentMessages=[{sender=user, text=what are all the denial code present}, {sender=bot, text=}, {sender=user, text=hello}, {sender=bot, text=Hello. Ask me a denial code or a member coverage question and I will return structured details.
+
+Try:
+- Explain denial code CO-45
+- Show member M12345 details
+- Is dental covered for member M12345?}]}}] as "application/json"
+2026-06-27T14:32:32.325+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:32:32.325+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:32:32.325+05:30  INFO 22800 --- [nio-8081-exec-9] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 9ms
+2026-06-27T14:32:32.325+05:30 DEBUG 22800 --- [nio-8081-exec-9] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:32:32.334+05:30  INFO 22800 --- [nio-8081-exec-9] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:32:32.334+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:32:32.334+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=2.15, response={answer=Ask about denial codes, member details, or co (truncated)...]
+2026-06-27T14:32:32.337+05:30 DEBUG 22800 --- [nio-8081-exec-9] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:32:40.094+05:30 DEBUG 22800 --- [nio-8081-exec-1] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+Hibernate: 
+    select
+        u1_0.id,
+        u1_0.active,
+        u1_0.email,
+        u1_0.firebase_uid,
+        u1_0.password,
+        u1_0.role,
+        u1_0.username 
+    from
+        users u1_0 
+    where
+        u1_0.username=?
+2026-06-27T14:32:40.098+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : POST "/api/smart/query", parameters={}
+2026-06-27T14:32:40.098+05:30 DEBUG 22800 --- [nio-8081-exec-1] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.SmartQueryController#processSmartQuery(Map, HttpServletRequest)
+2026-06-27T14:32:40.098+05:30 DEBUG 22800 --- [nio-8081-exec-1] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [{query=Hello, Hi, timezoneOffsetMinutes=330, medicalContext={recentMessages=[{sender=user, text=hell (truncated)...]
+2026-06-27T14:32:40.098+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.client.RestTemplate              : HTTP POST http://localhost:5004/query
+2026-06-27T14:32:40.098+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.client.RestTemplate              : Accept=[application/json, application/*+json]
+2026-06-27T14:32:40.098+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.client.RestTemplate              : Writing [{query=Hello, Hi, medicalContext={recentMessages=[{sender=user, text=hello}, {sender=bot, text=Hello. Ask me a denial code or a member coverage question and I will return structured details.
+
+Try:
+- Explain denial code CO-45
+- Show member M12345 details
+- Is dental covered for member M12345?}, {sender=user, text=I dont know}, {sender=bot, text=Ask about denial codes, member details, or coverage for a member ID (e.g., M12345).
+
+Try:
+- Explain denial code CO-45
+- Show member M12345 details
+- Is dental covered for member M12345?}]}}] as "application/json"
+2026-06-27T14:32:40.106+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.client.RestTemplate              : Response 200 OK
+2026-06-27T14:32:40.107+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.client.RestTemplate              : Reading to [java.util.Map<?, ?>]
+2026-06-27T14:32:40.107+05:30  INFO 22800 --- [nio-8081-exec-1] c.denial.bot.service.SmartQueryService   : ✅ ML API /query responded in 9ms
+2026-06-27T14:32:40.109+05:30 DEBUG 22800 --- [nio-8081-exec-1] org.hibernate.SQL                        : 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        conversations
+        (ai_output, bucket_date_id, created_at, output_type, timezone_offset_minutes, updated_at, user_id, user_input) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?)
+2026-06-27T14:32:40.122+05:30  INFO 22800 --- [nio-8081-exec-1] c.d.bot.controller.SmartQueryController  : 💾 Conversation saved for user: dev-user in bucket 2026-06-27
+2026-06-27T14:32:40.122+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:32:40.122+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [{error=null, processing_time_ms=2.45, response={answer=Hi. I can help with denial codes, member look (truncated)...]
+2026-06-27T14:32:40.124+05:30 DEBUG 22800 --- [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:32:54.564+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : POST "/api/auth/logout", parameters={}
+2026-06-27T14:32:54.564+05:30 DEBUG 22800 --- [nio-8081-exec-2] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.denial.bot.controller.AuthController#logout(String)
+2026-06-27T14:32:54.578+05:30  INFO 22800 --- [nio-8081-exec-2] c.denial.bot.controller.AuthController   : 🚪 Logout for user: Mutthu
+2026-06-27T14:32:54.594+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
+2026-06-27T14:32:54.594+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [LoginResponse{token='null', username='Mutthu', message='Logout successful', success=true}]
+2026-06-27T14:32:54.594+05:30 DEBUG 22800 --- [nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-06-27T14:45:01.518+05:30  WARN 22800 --- [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m50s252ms677µs700ns).
+2026-06-27T15:09:05.498+05:30  WARN 22800 --- [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m33s622ms564µs).

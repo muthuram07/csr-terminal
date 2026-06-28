@@ -17,6 +17,7 @@ function ChatBot() {
   const [currentInput, setCurrentInput] = useState('');
   const [recommendations, setRecommendations] = useState([]);
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('nvidia');
 
   // Generate unique message IDs to prevent duplicate key warnings
   const generateMessageId = useCallback(() => {
@@ -37,7 +38,8 @@ function ChatBot() {
       sender: 'bot',
       timestamp: new Date(),
       type,
-      options
+      options,
+      modelUsed: options?.modelUsed || null
     };
     setMessages(prev => [...prev, message]);
   }, [generateMessageId]);
@@ -144,6 +146,20 @@ function ChatBot() {
       payload = rawResult.response ?? rawResult.data ?? rawResult.result ?? rawResult.output ?? rawResult;
     }
     if (!payload) return null;
+
+    const warningText = rawResult?.warning || rawResult?.response?.warning || payload?.warning;
+    const wrap = (val) => {
+      if (warningText && typeof val === 'string') {
+        return {
+          type: 'general-text-structured',
+          data: {
+            answer: val,
+            warning: warningText
+          }
+        };
+      }
+      return val;
+    };
 
     // 2) If string looks like JSON, attempt to parse once safely
     if (typeof payload === 'string') {
@@ -267,7 +283,7 @@ function ChatBot() {
         const mapped = {
           denial_code: originalCode || bestMatch.code,
           description: bestMatch.description || bestMatch.explanation || bestMatch.meaning,
-          suggested_action: bestMatch.action || bestMatch.suggested_action || bestMatch.recommendation || payload.recommendation,
+          suggested_action: payload.recommendation || bestMatch.action || bestMatch.suggested_action,
         };
 
         // If multiple matches, include them all for display
@@ -277,18 +293,18 @@ function ChatBot() {
 
         return {
           type: 'denial-result-structured',
-          data: { ...mapped, original_query: userQuery },
+          data: { ...mapped, original_query: userQuery, warning: warningText },
         };
       }
 
       const mapped = {
         denial_code: originalCode,
         description: payload.description || payload.explanation || payload.meaning || payload.reason,
-        suggested_action: payload.suggested_action || payload.action || payload.recommendation || payload.next_steps,
+        suggested_action: payload.recommendation || payload.suggested_action || payload.action || payload.next_steps,
       };
       return {
         type: 'denial-result-structured',
-        data: { ...payload, ...mapped, original_query: userQuery },
+        data: { ...payload, ...mapped, original_query: userQuery, warning: warningText },
       };
     }
 
@@ -314,7 +330,7 @@ function ChatBot() {
         status: payload.status,
       };
       if (!data.coverage_answer && (payload.message || payload.suggestion)) {
-        return `${payload.message || 'Coverage details are unavailable.'}${payload.suggestion ? ` ${payload.suggestion}` : ''}`;
+        return wrap(`${payload.message || 'Coverage details are unavailable.'}${payload.suggestion ? ` ${payload.suggestion}` : ''}`);
       }
       return { type: 'plan-result-structured', data };
     }
@@ -326,50 +342,52 @@ function ChatBot() {
       (payload?.memberId && (payload?.memberName || payload?.status))
     ) {
       if (payload?.error) {
-        return payload.error;
+        return wrap(payload.error);
       }
       const member = payload.member ?? payload;
       const planDetails = member.plan_details ?? member.planDetails ?? {};
       return {
         type: 'plan-result-structured',
         data: {
-          coverage_answer: 'Member details found.',
+          coverage_answer: payload.coverage_answer || payload.llm_reasoning || 'Member details found.',
           member_id: member.member_id ?? member.memberId ?? 'N/A',
           member_name: member.member_name ?? member.memberName ?? member.name ?? 'N/A',
           status: member.status ?? 'N/A',
           plan_id: member.plan_id ?? member.planId ?? 'N/A',
           effective_date: member.effective_date ?? member.effectiveDate ?? 'N/A',
           end_date: member.end_date ?? member.endDate ?? 'N/A',
+          llm_reasoning: payload.llm_reasoning || (payload.coverage_answer !== 'Member details found.' ? payload.coverage_answer : undefined),
           plan_details: {
             coverage_type: planDetails.coverage_type ?? planDetails.coverageType ?? 'N/A',
             covered_services: planDetails.covered_services ?? planDetails.coveredServices ?? 'N/A',
             copay: planDetails.copay ?? 'N/A',
             notes: planDetails.notes,
           },
+          warning: warningText
         },
       };
     }
 
     // Generated response/help/out of scope passthroughs
     if (payload.type === 'generated_response' && payload.response) {
-      return payload.response;
+      return wrap(payload.response);
     }
     if (payload.type === 'general_answer') {
       const answer = payload.answer || 'How can I help you today?';
       const suggestions = Array.isArray(payload.suggested_queries) ? payload.suggested_queries.slice(0, 3) : [];
       if (suggestions.length === 0) {
-        return answer;
+        return wrap(answer);
       }
-      return `${answer}\n\nTry:\n${suggestions.map((s) => `- ${s}`).join('\n')}`;
+      return wrap(`${answer}\n\nTry:\n${suggestions.map((s) => `- ${s}`).join('\n')}`);
     }
     if (payload.type === 'help_response' || payload.type === 'general_help') {
-      return payload.message || payload.response || 'Here to help with denial codes and coverage questions!';
+      return wrap(payload.message || payload.response || 'Here to help with denial codes and coverage questions!');
     }
     if (payload.type === 'out_of_scope') {
       return { type: 'out_of_scope', data: { message: payload.message || 'This seems out of scope.' } };
     }
 
-    return payload;
+    return typeof payload === 'string' ? wrap(payload) : payload;
   };
 
   // NEW SMART NLP INPUT HANDLER
@@ -397,6 +415,7 @@ function ChatBot() {
         // Make the smart query request using the API service
         const response = await apiService.post('/api/smart/query', {
           query: userQuery,
+          model: selectedModel,
           timezoneOffsetMinutes: -new Date().getTimezoneOffset(),
           medicalContext: {
             recentMessages: messages.slice(-4).map(m => ({ sender: m.sender, text: typeof m.text === 'string' ? m.text : '' }))
@@ -406,11 +425,12 @@ function ChatBot() {
         const result = await response.json();
 
         if (response.ok && result?.success !== false) {
+          const modelUsed = result?.model_used || null;
           const normalized = normalizeResponse(result, userQuery);
           if (normalized) {
-            addBotMessage(normalized);
+            addBotMessage(normalized, 'text', { modelUsed });
           } else {
-            addBotMessage(result.response || 'I processed your query successfully.');
+            addBotMessage(result.response || 'I processed your query successfully.', 'text', { modelUsed });
           }
         } else {
           const errorMessage = result.error || result.message || "I'm having trouble connecting to my smart processing system. Please try again in a moment.";
@@ -486,6 +506,17 @@ function ChatBot() {
       {/* Fixed Input Area */}
       <div className="chat-input-container">
         <form onSubmit={handleInputSubmit} className="chat-input-form">
+          <div className="model-selector-container">
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="model-select-dropdown"
+              disabled={isTyping}
+            >
+              <option value="nvidia">⚡ NVIDIA Nemotron (Deep Reasoning)</option>
+              <option value="trained">🎯 Trained Model (Project Specific)</option>
+            </select>
+          </div>
           <div className="input-wrapper">
             <textarea
               value={currentInput}
@@ -571,7 +602,35 @@ function ChatMessage({ message }) {
     <div className="chat-message assistant">
       <div className="message-avatar">🤖</div>
       <div className="message-content">
-        {message.text?.type === 'member-result-structured' ? (
+        {message.modelUsed && (
+          <div className={`model-badge ${message.modelUsed === 'nvidia' ? 'model-badge-nvidia' : 'model-badge-trained'}`}>
+            {message.modelUsed === 'nvidia' ? '⚡ NVIDIA Nemotron' : '🎯 Trained Model'}
+          </div>
+        )}
+        {message.text?.type === 'general-text-structured' ? (
+          <div className="structured-response" style={{ maxWidth: '600px', display: 'block' }}>
+            <div className="message-text" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+              {typeof message.text.data.answer === 'string' ? message.text.data.answer.split('\n').map((line, index) => (
+                <div key={index}>{line}</div>
+              )) : String(message.text.data.answer)}
+            </div>
+            {message.text.data.warning && (
+              <div className="warning-section" style={{
+                background: '#fef3cd',
+                border: '1px solid #fbbf24',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginTop: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span>⚠️</span>
+                <span style={{ color: '#92400e', fontSize: '0.85rem' }}>{message.text.data.warning}</span>
+              </div>
+            )}
+          </div>
+        ) : message.text?.type === 'member-result-structured' ? (
           <div className="structured-response">
             <div className="response-header">
               <span>📋</span>
@@ -687,6 +746,21 @@ function ChatMessage({ message }) {
                 </div>
               </div>
             </div>
+            {message.text.data.warning && (
+              <div className="warning-section" style={{
+                background: '#fef3cd',
+                border: '1px solid #fbbf24',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginTop: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span>⚠️</span>
+                <span style={{ color: '#92400e', fontSize: '0.85rem' }}>{message.text.data.warning}</span>
+              </div>
+            )}
           </div>
         ) : message.text?.type === 'plan-result-structured' ? (
           <div className="structured-response">
@@ -787,6 +861,30 @@ function ChatMessage({ message }) {
                 </div>
               ) : (
                 <div></div>
+              )}
+              {message.text.data.llm_reasoning && (
+                <div className="response-section" style={{ gridColumn: 'span 2', marginTop: '0.8rem' }}>
+                  <div className="section-title">⚡ Deep Reasoning Insights</div>
+                  <div className="section-content" style={{ fontSize: '0.85rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                    {message.text.data.llm_reasoning}
+                  </div>
+                </div>
+              )}
+              {message.text.data.warning && (
+                <div className="warning-section" style={{
+                  background: '#fef3cd',
+                  border: '1px solid #fbbf24',
+                  borderRadius: '8px',
+                  padding: '1rem',
+                  marginTop: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  gridColumn: 'span 2'
+                }}>
+                  <span>⚠️</span>
+                  <span style={{ color: '#92400e', fontSize: '0.85rem' }}>{message.text.data.warning}</span>
+                </div>
               )}
             </div>
           </div>

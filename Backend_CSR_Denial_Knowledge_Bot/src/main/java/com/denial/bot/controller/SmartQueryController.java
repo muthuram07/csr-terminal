@@ -111,12 +111,16 @@ public class SmartQueryController {
             String queryType = (String) request.get("type");
             Map<String, Object> medicalContext = (Map<String, Object>) request.get("medicalContext");
             int timezoneOffsetMinutes = ((Number) request.getOrDefault("timezoneOffsetMinutes", 0)).intValue();
+            String model = (String) request.get("model");
+            if (model == null || model.trim().isEmpty()) {
+                model = "nvidia";
+            }
 
             if (query == null || query.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Query is required"));
             }
 
-            Map<String, Object> response = smartQueryService.processQuery(query, queryType, medicalContext);
+            Map<String, Object> response = smartQueryService.processQuery(query, queryType, medicalContext, model);
 
             if ((Boolean) response.getOrDefault("success", false)) {
                 saveConversation(user, query, response, timezoneOffsetMinutes);

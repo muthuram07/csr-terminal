@@ -174,7 +174,7 @@ class APIService {
   /**
    * Handle smart API endpoints with proper error handling
    */
-  async smartQuery(query, medicalContext = {}) {
+  async smartQuery(query, medicalContext = {}, model = 'nvidia') {
     const token = this.getAuthToken();
     if (!token) {
       throw new Error('Not authenticated. Please log in first.');
@@ -182,6 +182,7 @@ class APIService {
 
     const response = await this.post('/api/smart/query', {
       query,
+      model,
       timezoneOffsetMinutes: -new Date().getTimezoneOffset(),
       medicalContext,
     });

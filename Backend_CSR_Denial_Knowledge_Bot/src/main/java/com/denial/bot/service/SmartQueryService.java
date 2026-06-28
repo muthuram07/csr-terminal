@@ -50,6 +50,7 @@ public class SmartQueryService {
     private boolean circuitOpen = false;
 
     private final RestTemplate restTemplate;
+    private final RestTemplate nvidiaRestTemplate;
     private final Map<String, CachedResponse> responseCache = new ConcurrentHashMap<>();
 
     @Value("${smart.ml.api.base-url:http://localhost:5004}")
@@ -83,9 +84,15 @@ public class SmartQueryService {
     private boolean useLlmForSuggestions;
 
     public SmartQueryService(RestTemplateBuilder builder) {
+        // Local ML API: short timeouts (fast local service)
         this.restTemplate = builder
                 .setConnectTimeout(Duration.ofSeconds(5))
                 .setReadTimeout(Duration.ofSeconds(10))
+                .build();
+        // NVIDIA cloud API: longer timeouts (reasoning models can take 30-60s+)
+        this.nvidiaRestTemplate = builder
+                .setConnectTimeout(Duration.ofSeconds(15))
+                .setReadTimeout(Duration.ofSeconds(120))
                 .build();
     }
 
@@ -212,57 +219,317 @@ public class SmartQueryService {
     // ========================================================================
 
     /**
-     * Sends a query to the ML API with retry logic and caching.
+     * Sends a query to the ML API or NVIDIA LLM with retry logic.
      */
-    public Map<String, Object> processQuery(String query, String queryType, Map<String, Object> medicalContext) {
+    public Map<String, Object> processQuery(String query, String queryType, Map<String, Object> medicalContext, String model) {
         try {
-            // Check cache first (5 minute TTL for identical queries)
-            String cacheKey = "query:" + query.hashCode();
-            Map<String, Object> cached = getCachedResponse(cacheKey);
-            if (cached != null) {
-                return cached;
+            // 1. Fetch result and classification from the local trained model first
+            Map<String, Object> trainedResult = processQueryWithTrainedModel(query, queryType, medicalContext);
+            if (trainedResult == null || !Boolean.TRUE.equals(trainedResult.get("success"))) {
+                return trainedResult;
             }
 
-            // Retry with backoff
-            Map<String, Object> response = retryWithBackoff("processQuery", () -> {
-                Map<String, Object> requestBody = new HashMap<>();
-                requestBody.put("query", query);
-                if (queryType != null) {
-                    requestBody.put("type", queryType);
+            Object innerResponse = trainedResult.get("response");
+            Map<?, ?> localResp = null;
+            String detectedType = "general";
+            if (innerResponse instanceof Map) {
+                localResp = (Map<?, ?>) innerResponse;
+                detectedType = String.valueOf(localResp.get("query_type"));
+            }
+
+            // 2. Routing logic:
+            // - If the user selected the trained model, OR if the query is denial-oriented: use the trained model result directly!
+            boolean useTrainedModel = !"nvidia".equalsIgnoreCase(model) || "denial_lookup".equalsIgnoreCase(detectedType);
+
+            if (useTrainedModel) {
+                trainedResult.put("model_used", "trained");
+                return trainedResult;
+            }
+
+            // - Otherwise (general queries, member_lookup, plan_lookup), use NVIDIA!
+            if (llmApiKey == null || llmApiKey.isBlank()) {
+                logger.warn("⚠️ NVIDIA API Key is not set. Falling back to Trained Model.");
+                if (innerResponse instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> innerMap = (Map<String, Object>) innerResponse;
+                    innerMap.put("warning", "NVIDIA API Key is not configured. Automatically fell back to the local trained model.");
                 }
-                if (medicalContext != null && !medicalContext.isEmpty()) {
-                    requestBody.put("medicalContext", medicalContext);
+                trainedResult.put("model_used", "trained");
+                return trainedResult;
+            }
+
+            try {
+                return processQueryWithNvidia(query, detectedType, localResp, medicalContext);
+            } catch (Exception ex) {
+                logger.error("❌ NVIDIA LLM call failed, falling back to trained model: {}", ex.getMessage());
+                if (innerResponse instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> innerMap = (Map<String, Object>) innerResponse;
+                    innerMap.put("warning", "NVIDIA LLM query failed. Automatically fell back to the local trained model. Error: " + ex.getMessage());
                 }
-
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.set("User-Agent", "CSR-Denial-Bot-Backend/2.0");
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-                long startTime = System.currentTimeMillis();
-                ResponseEntity<Map> apiResponse = restTemplate.exchange(
-                        mlApiBaseUrl + "/query",
-                        HttpMethod.POST,
-                        entity,
-                        Map.class);
-                long duration = System.currentTimeMillis() - startTime;
-                logger.info("✅ ML API /query responded in {}ms", duration);
-
-                if (apiResponse.getStatusCode().is2xxSuccessful() && apiResponse.getBody() != null) {
-                    return apiResponse.getBody();
-                } else {
-                    throw new RestClientException("API returned: " + apiResponse.getStatusCode());
-                }
-            });
-
-            // Cache successful response
-            cacheResponse(cacheKey, response, 300000); // 5 minutes
-            return response;
-
+                trainedResult.put("model_used", "trained");
+                return trainedResult;
+            }
         } catch (Exception e) {
             logger.error("❌ Query processing failed: {}", e.getMessage());
             return createErrorResponse("Failed to process query: " + e.getMessage());
         }
+    }
+
+    private Map<String, Object> processQueryWithTrainedModel(String query, String queryType, Map<String, Object> medicalContext) {
+        // Check cache first (5 minute TTL for identical queries)
+        String cacheKey = "query:" + query.hashCode();
+        Map<String, Object> cached = getCachedResponse(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
+        // Retry with backoff
+        Map<String, Object> response = retryWithBackoff("processQuery", () -> {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("query", query);
+            if (queryType != null) {
+                requestBody.put("type", queryType);
+            }
+            if (medicalContext != null && !medicalContext.isEmpty()) {
+                requestBody.put("medicalContext", medicalContext);
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("User-Agent", "CSR-Denial-Bot-Backend/2.0");
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            long startTime = System.currentTimeMillis();
+            ResponseEntity<Map> apiResponse = restTemplate.exchange(
+                    mlApiBaseUrl + "/query",
+                    HttpMethod.POST,
+                    entity,
+                    Map.class);
+            long duration = System.currentTimeMillis() - startTime;
+            logger.info("✅ ML API /query responded in {}ms", duration);
+
+            if (apiResponse.getStatusCode().is2xxSuccessful() && apiResponse.getBody() != null) {
+                return apiResponse.getBody();
+            } else {
+                throw new RestClientException("API returned: " + apiResponse.getStatusCode());
+            }
+        });
+
+        // Cache successful response
+        cacheResponse(cacheKey, response, 300000); // 5 minutes
+        return response;
+    }
+
+    private Map<String, Object> processQueryWithNvidia(String query, String queryType, Map<?, ?> localResp, Map<String, Object> medicalContext) {
+        // 1. Fetch context from local response (only for structured plan/member lookups)
+        String contextText = "";
+        if (localResp != null) {
+            if ("member_lookup".equals(queryType) || "plan_lookup".equals(queryType)) {
+                contextText = formatTrainedResponseAsContext(localResp);
+            }
+        }
+
+        // 2. Call NVIDIA NIM chat completion
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(llmApiKey);
+
+        String systemPrompt = "You are a helpful and intelligent Customer Service Representative (CSR) denial knowledge assistant.\n";
+        if ("member_lookup".equals(queryType) || "plan_lookup".equals(queryType)) {
+            systemPrompt += "Your job is to assist with healthcare claims, denial codes, and plan coverage queries.\n"
+                    + "Answer the user query accurately and concisely based on the local database context provided below.\n"
+                    + "If the local database context contains denial codes or member details, use them as your primary source of truth.\n"
+                    + "Format your response clearly. Keep responses professional, structured, and easy to read.";
+        } else {
+            systemPrompt += "You can answer general questions, greetings, definitions (like copay, deductible, premium), and help the user navigate healthcare queries.\n"
+                    + "Keep your response friendly, clear, and professional.";
+        }
+
+        String userContent = "";
+        if (!contextText.isEmpty()) {
+            userContent += "[Local Database Context]\n" + contextText + "\n\n";
+        }
+        userContent += "[User Query]\n" + query;
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", llmModel);
+        body.put("temperature", llmTemperature);
+        body.put("top_p", llmTopP);
+        body.put("max_tokens", llmMaxTokens);
+        body.put("stream", false);
+        body.put("messages", List.of(
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userContent)
+        ));
+
+        if (llmEnableThinking || llmReasoningBudget > 0) {
+            Map<String, Object> chatTemplateKwargs = new HashMap<>();
+            chatTemplateKwargs.put("enable_thinking", llmEnableThinking);
+            body.put("chat_template_kwargs", chatTemplateKwargs);
+            if (llmReasoningBudget > 0) {
+                body.put("reasoning_budget", llmReasoningBudget);
+            }
+        }
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        long startTime = System.currentTimeMillis();
+        ResponseEntity<Map> apiResponse = nvidiaRestTemplate.exchange(llmApiUrl, HttpMethod.POST, request, Map.class);
+        long duration = System.currentTimeMillis() - startTime;
+        logger.info("✅ NVIDIA API responded in {}ms", duration);
+
+        if (apiResponse.getStatusCode().is2xxSuccessful() && apiResponse.getBody() != null) {
+            Map<?, ?> responseBody = apiResponse.getBody();
+            Object choices = responseBody.get("choices");
+            if (choices instanceof List<?> choiceList && !choiceList.isEmpty()
+                    && choiceList.get(0) instanceof Map<?, ?> firstChoice) {
+                Object message = firstChoice.get("message");
+                if (message instanceof Map<?, ?> messageMap) {
+                    String content = String.valueOf(messageMap.get("content"));
+
+                    // Strip <think>...</think> reasoning tags from response content
+                    content = stripThinkingTags(content);
+
+                    Map<String, Object> finalResponse = new HashMap<>();
+                    finalResponse.put("success", true);
+
+                    Map<String, Object> enrichedPayload = new HashMap<>();
+                    if (localResp != null) {
+                        for (Map.Entry<?, ?> entry : localResp.entrySet()) {
+                            if (entry.getKey() instanceof String) {
+                                enrichedPayload.put((String) entry.getKey(), entry.getValue());
+                            }
+                        }
+
+                        String type = String.valueOf(localResp.get("type"));
+                        if ("denial_explanation".equals(type)) {
+                            Object matchesObj = localResp.get("matches");
+                            if (matchesObj instanceof List && !((List<?>) matchesObj).isEmpty()) {
+                                List<?> matches = (List<?>) matchesObj;
+                                List<Map<String, Object>> newMatches = new ArrayList<>();
+                                for (int i = 0; i < matches.size(); i++) {
+                                    Object matchObj = matches.get(i);
+                                    if (matchObj instanceof Map) {
+                                        Map<String, Object> newMatch = new HashMap<>();
+                                        for (Map.Entry<?, ?> entry : ((Map<?, ?>) matchObj).entrySet()) {
+                                            if (entry.getKey() instanceof String) {
+                                                newMatch.put((String) entry.getKey(), entry.getValue());
+                                            }
+                                        }
+                                        if (i == 0) {
+                                            newMatch.put("description", content);
+                                        }
+                                        newMatches.add(newMatch);
+                                    }
+                                }
+                                enrichedPayload.put("matches", newMatches);
+                            } else {
+                                Map<String, Object> newMatch = new HashMap<>();
+                                newMatch.put("code", extractDenialCode(query));
+                                newMatch.put("description", content);
+                                newMatch.put("action", "Please check claim details and policy guidelines.");
+                                enrichedPayload.put("matches", List.of(newMatch));
+                            }
+                        } else if ("plan_coverage".equals(type) || "member_coverage".equals(type)) {
+                            enrichedPayload.put("coverage_answer", content);
+                        } else if ("member_info".equals(type)) {
+                            enrichedPayload.put("llm_reasoning", content);
+                        } else {
+                            enrichedPayload.put("answer", content);
+                            enrichedPayload.put("type", "general_answer");
+                        }
+                    } else {
+                        enrichedPayload.put("answer", content);
+                        enrichedPayload.put("type", "general_answer");
+                    }
+
+                    finalResponse.put("response", enrichedPayload);
+                    finalResponse.put("processing_time_ms", duration);
+                    finalResponse.put("model_used", "nvidia");
+                    return finalResponse;
+                }
+            }
+        }
+        throw new RestClientException("NVIDIA API call did not return a valid completion");
+    }
+
+    private String formatTrainedResponseAsContext(Map<?, ?> respMap) {
+        StringBuilder sb = new StringBuilder();
+        String type = String.valueOf(respMap.get("type"));
+        sb.append("Trained Model Classification Type: ").append(type).append("\n");
+
+        if ("denial_explanation".equals(type) || respMap.containsKey("matches")) {
+            sb.append("Local Database Matches:\n");
+            Object matchesObj = respMap.get("matches");
+            if (matchesObj instanceof List) {
+                List<?> matches = (List<?>) matchesObj;
+                for (Object matchObj : matches) {
+                    if (matchObj instanceof Map) {
+                        Map<?, ?> match = (Map<?, ?>) matchObj;
+                        sb.append("- Code: ").append(match.get("code"))
+                          .append(", Description: ").append(match.get("description"))
+                          .append(", Action: ").append(match.get("action")).append("\n");
+                    }
+                }
+            }
+        } else if ("plan_coverage".equals(type) || "member_coverage".equals(type) || respMap.containsKey("plan_details")) {
+            sb.append("Local Database Member & Plan Details:\n");
+            sb.append("Member ID: ").append(respMap.get("member_id")).append("\n");
+            sb.append("Member Name: ").append(respMap.get("member_name")).append("\n");
+            sb.append("Status: ").append(respMap.get("status")).append("\n");
+            sb.append("Plan ID: ").append(respMap.get("plan_id")).append("\n");
+            sb.append("Effective Date: ").append(respMap.get("effective_date")).append("\n");
+            sb.append("End Date: ").append(respMap.get("end_date")).append("\n");
+            Object planDetailsObj = respMap.get("plan_details");
+            if (planDetailsObj instanceof Map) {
+                Map<?, ?> pd = (Map<?, ?>) planDetailsObj;
+                sb.append("Coverage Type: ").append(pd.get("coverage_type")).append("\n");
+                sb.append("Covered Services: ").append(pd.get("covered_services")).append("\n");
+                sb.append("Copay: ").append(pd.get("copay")).append("\n");
+                if (pd.get("notes") != null) {
+                    sb.append("Notes: ").append(pd.get("notes")).append("\n");
+                }
+            }
+            if (respMap.containsKey("coverage_answer")) {
+                sb.append("Pre-calculated coverage answer: ").append(respMap.get("coverage_answer")).append("\n");
+            }
+        } else if ("member_info".equals(type) || respMap.containsKey("member")) {
+            sb.append("Local Database Member Info:\n");
+            Object memberObj = respMap.get("member");
+            if (memberObj instanceof Map) {
+                Map<?, ?> member = (Map<?, ?>) memberObj;
+                sb.append("Member ID: ").append(member.get("member_id")).append("\n");
+                sb.append("Member Name: ").append(member.get("member_name")).append("\n");
+                sb.append("Status: ").append(member.get("status")).append("\n");
+                sb.append("Plan ID: ").append(member.get("plan_id")).append("\n");
+            }
+        } else if (respMap.containsKey("answer")) {
+            sb.append("Local Database Answer: ").append(respMap.get("answer")).append("\n");
+        }
+        return sb.toString();
+    }
+
+    private String extractDenialCode(String query) {
+        if (query == null) return "Code";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\b([A-Z]{2,3})\\s*[- ]?\\s*(\\d{1,3})\\b", java.util.regex.Pattern.CASE_INSENSITIVE);
+        java.util.regex.Matcher matcher = pattern.matcher(query);
+        if (matcher.find()) {
+            return (matcher.group(1) + matcher.group(2)).toUpperCase();
+        }
+        return "Code";
+    }
+
+    /**
+     * Strip &lt;think&gt;...&lt;/think&gt; reasoning blocks from NVIDIA model responses.
+     * When enable_thinking is true, the Nemotron model returns its reasoning
+     * process wrapped in these tags before the actual answer.
+     */
+    private String stripThinkingTags(String content) {
+        if (content == null || content.isEmpty()) return content;
+        // Remove <think>...</think> blocks (including multiline content)
+        String stripped = content.replaceAll("(?s)<think>.*?</think>", "").trim();
+        // If stripping removed everything, return original content
+        return stripped.isEmpty() ? content : stripped;
     }
 
     /**
@@ -420,17 +687,14 @@ public class SmartQueryService {
             if (llmEnableThinking || llmReasoningBudget > 0) {
                 Map<String, Object> chatTemplateKwargs = new HashMap<>();
                 chatTemplateKwargs.put("enable_thinking", llmEnableThinking);
-
-                Map<String, Object> extraBody = new HashMap<>();
-                extraBody.put("chat_template_kwargs", chatTemplateKwargs);
+                body.put("chat_template_kwargs", chatTemplateKwargs);
                 if (llmReasoningBudget > 0) {
-                    extraBody.put("reasoning_budget", llmReasoningBudget);
+                    body.put("reasoning_budget", llmReasoningBudget);
                 }
-                body.put("extra_body", extraBody);
             }
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.exchange(llmApiUrl, HttpMethod.POST, request, Map.class);
+            ResponseEntity<Map> response = nvidiaRestTemplate.exchange(llmApiUrl, HttpMethod.POST, request, Map.class);
             if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
                 return List.of();
             }
