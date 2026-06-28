@@ -27,6 +27,9 @@ public class SecurityConfig {
     @Value("${app.disable-auth:false}")
     private boolean disableAuth;
 
+    @Value("${cors.allowed.origins:http://localhost:3000}")
+    private String corsAllowedOrigins;
+
     public SecurityConfig(FirebaseAuthenticationFilter firebaseAuthenticationFilter) {
         this.firebaseAuthenticationFilter = firebaseAuthenticationFilter;
     }
@@ -59,15 +62,25 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allow specific origins: Frontend (3000), AI Model API (5004), and Backend (8081)
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",           // React Frontend
+        // Build origins list: always include localhost + configured origins
+        java.util.List<String> origins = new java.util.ArrayList<>(Arrays.asList(
+            "http://localhost:3000",           // React Frontend (local dev)
             "http://localhost:5004",           // AI Model API (Flask)
             "http://localhost:8081",           // Backend Self
             "http://127.0.0.1:3000",
             "http://127.0.0.1:5004",
             "http://127.0.0.1:8081"
         ));
+        
+        // Add configured origins (e.g., Vercel deployment URL)
+        for (String origin : corsAllowedOrigins.split(",")) {
+            String trimmed = origin.trim();
+            if (!trimmed.isEmpty() && !origins.contains(trimmed)) {
+                origins.add(trimmed);
+            }
+        }
+        
+        configuration.setAllowedOrigins(origins);
         
         // Allow all HTTP methods needed by the frontend and AI model
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));

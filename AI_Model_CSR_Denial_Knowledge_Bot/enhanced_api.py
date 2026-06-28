@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import pickle
 import re
 import traceback
@@ -510,7 +511,11 @@ def available_data():
     ), 200
 
 
+# Initialize when imported (needed for gunicorn with --preload)
+initialize_api()
+
 if __name__ == "__main__":
-    initialize_api()
-    logger.info("Starting Flask API on port 5004")
-    app.run(host="0.0.0.0", port=5004, debug=False)
+    port = int(os.environ.get("PORT", 5004))
+    logger.info("Starting Flask API on port %d", port)
+    app.run(host="0.0.0.0", port=port, debug=False)
+

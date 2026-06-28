@@ -1,0 +1,6 @@
+target/
+.env
+*.log
+.git
+.gitignore
+denial_bot.db
