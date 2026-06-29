@@ -1,0 +1,35 @@
+# Local environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE / Editor folders
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build / Output folders
+target/
+build/
+dist/
+node_modules/
+
+# Python / ML artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+venv/
+.venv/
+env/
